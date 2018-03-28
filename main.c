@@ -1,36 +1,50 @@
 #include <stdio.h>
-#include <sys/mman.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <sys/ipc.h>
+#include <sys/types.h>
+#include <sys/shm.h>
 
-#define handle_error(msg) \
-   do { perror(msg); exit(EXIT_FAILURE); } while (0)
+
+#define SHSIZE 100
 
 int main(int argc,char *argv[]){
-   void *addr;
-   size_t length = 10;
-   char writes[length];
-   FILE *fd;
+   int shmid;
+   key_t key;
+   char *shm;
+   char *s;
+   struct shmid_ds *shmid_buf;
+   key = 9876;
+   shmid = shmget(key,SHSIZE,IPC_CREAT | 0666);
+   if (shmid < 0){
+      perror("shmget");
+      exit(1);
+   }
+   shm = shmat(shmid,NULL,0);
+   if (shm == (char *) -1){
+      perror("shmmat");
+      exit(1);
+   }
 
-   addr =  mmap(NULL, length, PROT_READ | PROT_WRITE , MAP_SHARED | MAP_ANONYMOUS ,-1, 0);
-   if (addr == MAP_FAILED){
-      handle_error("mmap");
+   memcpy(shm,"hola",4);
+   s = shm;
+   s =s + 4;
+   *s = 0;
+   while(*shm != '*'){
+      sleep(1);
    }
-   mlock(addr,length);
-   fd = fopen("dir.txt","w+");
-   fprintf(fd,"%p",addr);
-   fflush(fd);
-   printf("map id: %p\n",addr);
-   char out = 'i';
-   memcpy(addr,"hola",length);
-   while(out != 'o'){
-      printf("digite algo\n");
-      scanf("%c",&out);
+   int status = shmdt(shm);
+   if (status < 0){
+      perror("shmdt");
+      exit(1);
    }
-   munlock(addr,length);
-   fclose(fd);
-   munmap(addr, length);
+   status = shmctl(shmid,IPC_RMID,shmid_buf);
+   if (status < 0){
+      perror("shmclt");
+      exit(1);
+   }
+
    return 0;
 }

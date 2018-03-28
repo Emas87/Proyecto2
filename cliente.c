@@ -1,36 +1,34 @@
 #include <stdio.h>
-#include <sys/mman.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <sys/ipc.h>
+#include <sys/types.h>
+#include <sys/shm.h>
 
-#define handle_error(msg) \
-   do { perror(msg); exit(EXIT_FAILURE); } while (0)
-
+#define SHSIZE 100
 
 int main(int argc,char *argv[]){
-   void *addr;
-   //unsigned int *dir;
-   //int dir;
-   char dir[16];
-   size_t length = 10;
-   char writes[length];
-   FILE *fd;
-   fd = fopen("dir.txt","r");
-   
-   fscanf(fd,"%s",dir);
-   long int num = (long int)strtol(dir, NULL, 16);
-   addr = num;
-   printf("map id: %p\n",addr);
-
-   mmap(addr, length, PROT_READ | PROT_WRITE , MAP_SHARED | MAP_ANONYMOUS ,-1, 0);
-   if (addr == MAP_FAILED){
-      handle_error("mmap");
+   int shmid;
+   key_t key;
+   char *shm;
+   char *s;
+   key = 9876;
+   shmid = shmget(key,SHSIZE,0666);
+   if (shmid < 0){
+      perror("shmget");
+      exit(1);
+   }
+   shm = shmat(shmid,NULL,0);
+   if (shm == (char *) -1){
+      perror("shmmat");
+      exit(1);
    }
 
-   memcpy(writes,addr,length);
-   printf("esto dice writes: %s\n",writes);
-   munmap(addr, length);
-   fclose(fd);
+   for(s = shm; *s != 0;s++){
+      printf("%c",*s);
+   }
+   printf("\n");
+   *shm = '*';
    return 0;
 }
