@@ -30,5 +30,7 @@ int main(int argc,char *argv[]){
    }
    printf("\n");
    *shm = '*';
+   shmdt(shm);
+
    return 0;
 }

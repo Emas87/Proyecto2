@@ -7,6 +7,6 @@ funcion string_to_key(Oscar)
 Creador:
 shmget de buffer(check)
 Semaforo
-shmget de bandera de terminacion
-shmget de contador productor
-shmget de contador de consumir
+shmget de bandera de terminacion(check)
+shmget de contador productor(check)
+shmget de contador de consumir(check)
