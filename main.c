@@ -1,11 +1,9 @@
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <fcntl.h>
-#include <sys/ipc.h>
-#include <sys/types.h>
 #include <sys/shm.h>
+#include "Semaforo.h"
+
 
 
 #define SHSIZE 100
@@ -39,13 +37,19 @@ void shmunmap(int shmid,char *shm){
 
 int main(int argc,char *argv[]){
    int shmid_buf,shmid_bandera,shmid_cont_prod,shmid_cont_cons;
-   key_t key,key_bandera,key_cont_prod,key_cont_cons;
+   key_t key,key_semaforo,key_bandera,key_cont_prod,key_cont_cons;
    char *shm = NULL,*shm_cont_prod = NULL,*shm_cont_cons = NULL,*shm_bandera = NULL;
    char *s;
+   int semid = 0;
    key = 9876; //key del buffer
    key_bandera=0; //key de la bandera
    key_cont_prod=1; //key del contador de productores
    key_cont_cons=2; //key del contador de consumidores
+   key_semaforo = 3; //key del semaforo
+   
+   //Semaforo
+   semid = Semaforo(key_semaforo);
+   printf("semid: %d\n",semid);
 
    shmid_buf = shmmap(key,&shm,SHSIZE);
    shmid_bandera = shmmap(key_bandera,&shm_bandera,SHSIZE);
@@ -56,14 +60,36 @@ int main(int argc,char *argv[]){
    s = shm;
    s =s + 4;
    *s = 0;
+   Signal(semid);
    while(*shm != '*'){
       sleep(1);
    }
-   
+   Wait(semid);
    shmunmap(shmid_buf,shm);
    shmunmap(shmid_bandera,shm_bandera);
    shmunmap(shmid_cont_prod,shm_cont_prod);
    shmunmap(shmid_cont_cons,shm_cont_cons);
+   RemSem(semid);
+
 
    return 0;
 }
+
+/*int main() {
+    Semaforo s;
+    int j;
+
+    if ( fork() ) {
+       	for (int i = 0; i < 10; i++ ){
+           printf( "Esperando para activar el semaforo %d \n", i );
+	}
+       	scanf( "%d", &j );
+	exit(-1);
+       	s.Signal();
+    }
+    else {
+       printf( "Esperando que el semaforo se active  ...\n" );
+       s.Wait();
+       printf( "Semaforo activado\n" );
+    }
+*/
