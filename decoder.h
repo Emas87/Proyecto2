@@ -16,6 +16,6 @@ int decoder(char *name){
    long int result = strtol(conversion, NULL, 10);
    printf("Buffer KEY: %ld\n", result);
 
-   return value;
+   return result;
 
 }
