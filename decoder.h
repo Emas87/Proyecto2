@@ -1,4 +1,4 @@
-
+#include <ctype.h>
 int decoder(char *name){
 
    int i;

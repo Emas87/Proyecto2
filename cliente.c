@@ -5,15 +5,30 @@
 #include <sys/ipc.h>
 #include <sys/types.h>
 #include <sys/shm.h>
+#include "Semaforo.h"
+#include "decoder.h"
+
 
 #define SHSIZE 100
 
 int main(int argc,char *argv[]){
    int shmid;
-   key_t key;
+   key_t key,key_semaforo,key_bandera,key_cont_prod,key_cont_cons;
    char *shm;
    char *s;
-   key = 9876;
+   int semid = 0;
+
+   s = "buffer";
+   key = decoder(s); //key del buffer
+   s = "bandera";   
+   key_bandera=decoder(s); //key de la bandera
+   s = "contador1";   
+   key_cont_prod=decoder(s); //key del contador de productores
+   s = "contador2";   
+   key_cont_cons=decoder(s); //key del contador de consumidores
+   s = "semaforo";   
+   key_semaforo = decoder(s); //key del semaforo
+
    shmid = shmget(key,SHSIZE,0666);
    if (shmid < 0){
       perror("shmget");

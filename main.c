@@ -3,10 +3,10 @@
 #include <unistd.h>
 #include <sys/shm.h>
 #include "Semaforo.h"
-
-
+#include "decoder.h"
 
 #define SHSIZE 100
+
 int shmmap(key_t key,char **shm,int shsize){
    int shmid = shmget(key,shsize,IPC_CREAT | 0666);
    if (shmid < 0){
@@ -41,11 +41,17 @@ int main(int argc,char *argv[]){
    char *shm = NULL,*shm_cont_prod = NULL,*shm_cont_cons = NULL,*shm_bandera = NULL;
    char *s;
    int semid = 0;
-   key = 9876; //key del buffer
-   key_bandera=0; //key de la bandera
-   key_cont_prod=1; //key del contador de productores
-   key_cont_cons=2; //key del contador de consumidores
-   key_semaforo = 3; //key del semaforo
+
+   s = "buffer";
+   key = decoder(s); //key del buffer
+   s = "bandera";   
+   key_bandera=decoder(s); //key de la bandera
+   s = "contador1";   
+   key_cont_prod=decoder(s); //key del contador de productores
+   s = "contador2";   
+   key_cont_cons=decoder(s); //key del contador de consumidores
+   s = "semaforo";   
+   key_semaforo = decoder(s); //key del semaforo
    
    //Semaforo
    semid = Semaforo(key_semaforo);
