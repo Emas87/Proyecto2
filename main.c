@@ -66,11 +66,13 @@ int main(int argc,char *argv[]){
    s = shm;
    s =s + 4;
    *s = 0;
-   Signal(semid);
+   Wait(semid);
+
    while(*shm != '*'){
       sleep(1);
    }
-   Wait(semid);
+   Signal(semid);
+   
    shmunmap(shmid_buf,shm);
    shmunmap(shmid_bandera,shm_bandera);
    shmunmap(shmid_cont_prod,shm_cont_prod);
