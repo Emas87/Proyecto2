@@ -61,6 +61,7 @@ int main(int argc,char *argv[]){
    shmid_bandera = shmmap(key_bandera,&shm_bandera,SHSIZE);
    shmid_cont_prod = shmmap(key_cont_prod,&shm_cont_prod,SHSIZE);
    shmid_cont_cons = shmmap(key_cont_cons,&shm_cont_cons,SHSIZE);
+   getSemaphore(key_semaforo);
 
    memcpy(shm,"hola",4);
    s = shm;
