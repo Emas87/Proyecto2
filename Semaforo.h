@@ -4,20 +4,23 @@
 #include <stdlib.h>
 #include <errno.h>
 
-int Semaforo(key_t key ){
+int Semaforo(key_t key, int sem_size ){
    int ValorInicial = 1;
    int id;		// Identificador del semaforo   
    struct sembuf sbuf;
-   id = semget(key,1, 0775 | IPC_CREAT | IPC_EXCL );
+   id = semget(key,sem_size, 0775 | IPC_CREAT | IPC_EXCL );
    if(id< 0){
       perror("Can\'t get id due to");
       exit(-1);
    } else if (id != -1){
-      sbuf.sem_num = 0;
-      sbuf.sem_op = ValorInicial;  /* This is the number of runs without queuing. */
-      sbuf.sem_flg = 0;
-      if (semop(id, &sbuf, 1) == -1) {
-         perror("error: semop"); exit(1);
+      //inicializar semaforos
+      for(int i =0;i<sem_size;i++){
+         sbuf.sem_num = i;
+         sbuf.sem_op = ValorInicial;  /* This is the number of runs without queuing. */
+         sbuf.sem_flg = 0;
+         if (semop(id, &sbuf, 1) == -1) {
+            perror("error: semop"); exit(1);
+         }
       }
    } else if (errno == EEXIST) {
       id = semget(key, 0, 0);
@@ -60,39 +63,16 @@ void RemSem(int semid){
 	   perror("semctl error: IPC_RMID"); exit(1);
 	}
 }
-/*
+
 int getSemaphore(key_t semkey) {
 	int semid = 0;
-	struct sembuf sbuf;
 	
 	// Get semaphore ID associated with this key. 
 	if ((semid = semget(semkey, 0, 0)) == -1) {
-
-	    // Semaphore does not exist - Create. 
-	    if ((semid = semget(semkey, 1, IPC_CREAT | IPC_EXCL | S_IRUSR |
-	        S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH)) != -1)
-	    {
-	        // Initialize the semaphore. 
-	        sbuf.sem_num = 0;
-	        sbuf.sem_op = 1;  // This is the number of runs
-	                             without queuing. 
-	        sbuf.sem_flg = 0;
-	        if (semop(semid, &sbuf, 1) == -1) {
-	            perror("IPC error: semop"); exit(1);
-	        }
-	    }
-	    else if (errno == EEXIST) {
-	        if ((semid = semget(semkey, 0, 0)) == -1) {
-	            perror("IPC error 1: semget"); exit(1);
-	        }
-	    }
-	    else {
 	        perror("IPC error 2: semget"); exit(1);
-	    }
 	}
 	
 	printf("semid: %d\n", semid);
 	
 	return semid;
 }
-*/

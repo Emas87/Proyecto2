@@ -6,6 +6,7 @@
 #include "decoder.h"
 
 #define SHSIZE 100
+#define SEMSIZE 4 //Creo que son solo 4 semaforos que se ocupan, para el puntero del buffer/bufer, para la banddera, y para los dos contadores
 
 int shmmap(key_t key,char **shm,int shsize){
    int shmid = shmget(key,shsize,IPC_CREAT | 0666);
@@ -40,7 +41,7 @@ int main(int argc,char *argv[]){
    key_t key,key_semaforo,key_bandera,key_cont_prod,key_cont_cons;
    char *shm = NULL,*shm_cont_prod = NULL,*shm_cont_cons = NULL,*shm_bandera = NULL;
    char *s;
-   int semid = 0;
+   int semid = 0,sem_size = SEMSIZE;
 
    s = "buffer";
    key = decoder(s); //key del buffer
@@ -54,7 +55,7 @@ int main(int argc,char *argv[]){
    key_semaforo = decoder(s); //key del semaforo
    
    //Semaforo
-   semid = Semaforo(key_semaforo);
+   semid = Semaforo(key_semaforo,sem_size);
    printf("semid: %d\n",semid);
 
    shmid_buf = shmmap(key,&shm,SHSIZE);

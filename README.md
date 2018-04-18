@@ -17,5 +17,5 @@ funcion mandar mensajes
 funcion leer mensajes
 
 all:
-transformar el buffer para administracion circular?
-getSemaphore()
+transformar el buffer para administracion circular? se ocupa un puntero, podemos utilizar el mimso buffer para el puntero, le asiganamos la primer posicion al puntero, antes de leer y escribir se revisa el puntero
+getSemaphore(check)
