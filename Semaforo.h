@@ -34,9 +34,9 @@ int Semaforo(key_t key, int sem_size ){
    return id;
 }
 
-void Wait(int id) {//P
+void Wait(int id,int snum) {//P
    struct sembuf sbuf;
-	sbuf.sem_num = 0;
+	sbuf.sem_num = snum;
 	sbuf.sem_op = -1;  
 	sbuf.sem_flg = 0;
 	if (semop(id, &sbuf, 1) == -1) {
@@ -45,9 +45,9 @@ void Wait(int id) {//P
 	}
 }
 
-void Signal(int id) {//V
+void Signal(int id,int snum) {//V
    struct sembuf sbuf;
-	sbuf.sem_num = 0;
+	sbuf.sem_num = snum;
 	sbuf.sem_op = 1; 
 	sbuf.sem_flg = 0;
 	if (semop(id, &sbuf, 1) == -1) {

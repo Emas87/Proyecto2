@@ -14,7 +14,7 @@ int decoder(char *name){
    }
 
    long int result = strtol(conversion, NULL, 10);
-   printf("Buffer KEY: %ld\n", result);
+   printf("Buffer KEY: 0x%08x\n", (unsigned int)result);
 
    return result;
 
