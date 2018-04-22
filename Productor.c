@@ -74,7 +74,7 @@ int main(int argc,char *argv[]){
    s = "semaforo";   
    key_semaforo = decoder(s); //key del semaforo
 
-   shmid_buf = shmmap(key,&shm,SHSIZE+(MSJSIZE)* *tamano);
+   shmid_buf = shmmap(key,&shm,0);
    shmid_bandera = shmmap(key_bandera,&shm_bandera,1);
    shmid_cont_prod = shmmap(key_cont_prod,(char **)&shm_cont_prod,4);
    shmid_cont_cons = shmmap(key_cont_cons,(char **)&shm_cont_cons,4);
