@@ -16,15 +16,13 @@ void parser(int modo, char *buffer_name[], long int* size, double*average_time, 
 
    char * opciones[argc -1]; // Puntero con las opciones
    char * parametros[argc -1]; // Puntero con los parametros
-   
    int cant_opc = 0; // Cantidad de opciones especificadas
    int cant_param = 0; // Cantidad de parametros especificados
-
    int i,j = 0; // iteradores
 
    // No se ingresan argumentos
    if(argc == 1){
-      printf("No hay ningun argumento\n");
+      printf("ERROR: No se ingreso ningun argumento\n");
       exit(-1);
    }
 
@@ -33,7 +31,7 @@ void parser(int modo, char *buffer_name[], long int* size, double*average_time, 
 
       // En caso de que algun argumento sea solo un guion "-"
       if(strcmp(argv[i+1],"-") == 0){
-         printf("Opcion - invalida\n");
+         printf("ERROR: Opcion \"-\" invalida\n");
          exit(-1);
       }
 
@@ -44,7 +42,7 @@ void parser(int modo, char *buffer_name[], long int* size, double*average_time, 
       if(!status){
          if(i%2!=0){
             printf("ERROR: Formato incorrecto en argumento %s\n", argv[i+1] );
-            printf("El formato adecuado es: Programa -opcion parametro -opcion parametro\n");
+            printf("El formato adecuado es: \nPrograma -opcion parametro -opcion parametro\n");
             exit(-1);
          }
          cant_opc += 1;
@@ -54,7 +52,7 @@ void parser(int modo, char *buffer_name[], long int* size, double*average_time, 
       } else { // Los parametros se ingresan seguido de las opciones 
          if(i%2==0){
             printf("ERROR: Formato incorrecto en argumento %s\n", argv[i+1] );
-            printf("El formato adecuado es: Programa -opcion parametro -opcion parametro\n");
+            printf("El formato adecuado es: \nPrograma -opcion parametro -opcion parametro\n");
             exit(-1);
          }
          cant_param += 1;
@@ -67,30 +65,27 @@ void parser(int modo, char *buffer_name[], long int* size, double*average_time, 
 
    // Revision de que cada opcion tenga un parametro asociado y viceversa
    if(cant_opc != cant_param){
-      printf("Cantidad de datos no concuerda\n");
+      printf("ERROR: Se ingreso una cantidad diferente de opciones y parametros \nLa cantidad de datos no concuerda:\n");
       printf("Opciones: %d\n",cant_opc);
       printf("Parametros: %d\n",cant_param);
       exit(-1);
    }
 
-
    // Revision de repeticion de opciones
    char * opcion_actual[argc -1]; 
-
    for(i = 0;i < argc - 1; i++){
       opcion_actual[i] = opciones[i];
       if(strcmp(opcion_actual[i],"") != 0) {
          for(j = 0;j < argc - 1; j++){
             if (i != j){
                if(strcmp(opcion_actual[i],opciones[j]) == 0){
-                  printf("Se repite opcion %s\n", opcion_actual[i]);
+                  printf("ERROR: Se repite la opcion %s\n", opcion_actual[i]);
                   exit(-1);
                }
             }
          }
       }
    }
-
 
    // Revisar que tipo de opciones se ingresaron 
    int buffer_on = 0;
@@ -102,11 +97,15 @@ void parser(int modo, char *buffer_name[], long int* size, double*average_time, 
       if(strcmp(opciones[i],"-b") == 0){
          buffer_on = 1;
          *buffer_name = parametros[i+1];
+         if(strlen(*buffer_name)>100){
+           printf("ERROR: Buffer no puede ser mayor a 100 digitos\n");
+           exit(-1);
+         }
          for(j = 0; j < (int)strlen(*buffer_name); j++){
-            if(!((*buffer_name)[j]>='a' && (*buffer_name)[j]<='z')){
-              printf("ERROR: La opcion %s solo acepta letras minusculas sin numeros\n", opciones[i]);
+            if(!(((*buffer_name)[j]>='a' && (*buffer_name)[j]<='z') || ((*buffer_name)[j]>='A' && (*buffer_name)[j]<='Z') || ((*buffer_name)[j]>='0' && (*buffer_name)[j]<='9') || ((*buffer_name)[j]==95))){
+              printf("ERROR: Nombre de Buffer Incorrecto\nUsar Mayusculas, Minusculas, Numeros y Guion Bajo\n");
               exit(-1);
-            } 
+            }
          }
          printf("Buffer: %s\n", *buffer_name);
       }
@@ -116,7 +115,7 @@ void parser(int modo, char *buffer_name[], long int* size, double*average_time, 
          size_on = 1;
          char *size_s = parametros[i+1];
          if(strlen(size_s)>8){
-           printf("Tamano no puede ser mayor a 8 digitos\n");
+           printf("ERROR: Tamano no puede ser mayor a 8 digitos\n");
            exit(-1);
          }
          for(j = 0; j < (int)strlen(size_s); j++){
@@ -134,16 +133,24 @@ void parser(int modo, char *buffer_name[], long int* size, double*average_time, 
          time_on = 1;
          char *average_time_s = parametros[i+1];
          if(strlen(average_time_s)>10){
-           printf("Tiempo no puede ser mayor a 10 digitos\n");
-           printf("El punto decimal se cuenta como un digito\n");
+           printf("ERROR: Tiempo no puede ser mayor a 10 digitos\n");
+           printf("NOTA: El punto decimal se cuenta como un digito\n");
            exit(-1);
          }
+         int point_detected = 0;
          for(j = 0; j < (int)strlen(average_time_s); j++){
-            if(!(average_time_s[j]>='0' && average_time_s[j]<='9')){
-              if(!(average_time_s[j]==46)){ // Es un punto
-                printf("ERROR: La opcion %s solo acepta numeros de punto flotante utilizando punto como separador\n", opciones[i]);
+            if(average_time_s[j]==46){
+               point_detected += 1 ;
+	       if(point_detected>1){
+                  printf("ERROR: Se ingreso dos veces el punto \".\" en la opcion %s\n", opciones[i]);
+                  exit(-1);
+               }
+            }
+            if(!((average_time_s[j]>='0' && average_time_s[j]<='9') || (average_time_s[j]==46))){
+              //if(!(average_time_s[j]==46)){ // Es un punto
+                printf("ERROR: La opcion %s solo acepta numeros reales utilizando punto como separador\n", opciones[i]);
                 exit(-1);
-              }
+              //}
             } 
          }
 
@@ -154,46 +161,46 @@ void parser(int modo, char *buffer_name[], long int* size, double*average_time, 
 
       // Opcion default
       else if(strcmp(opciones[i],"") == 0){
-         // Do nothing
+         // Esta opcion es configurada por el algoritmo, no hacer nada.
       } 
 
       // Opcion invalida, se intenta usar una opcion invalida -d, -x, etc.
       else { 
-         printf("Opcion %s invalida\n",opciones[i]);
+         printf("ERROR: La opcion %s es invalida\n",opciones[i]);
          exit(-1);
       }
    }
 
    if(modo == 0){ // Creador
       if(buffer_on == 0 || size_on == 0){
-	 printf("Faltan argumentos\n");
-	 printf("Creador debe tener nombre del buffer y tamano como argumentos de entrada\n");
+	 printf("ERROR: Faltan argumentos\n");
+	 printf("Creador debe tener nombre (-b) y tamano (-s) del buffer como argumentos de entrada\n");
          exit(-1);
       } else if (time_on == 1){
-         printf("Sobran argumentos\n");
-         printf("Creador no necesita argumentos de tiempo promedio\n");
+         printf("ERROR: Sobran argumentos\n");
+         printf("Creador no necesita argumentos de tiempo promedio (-t)\n");
          exit(-1);
       }
    }
    else if(modo == 1){ // Consumidor-Productor
       if(buffer_on == 0 || time_on == 0){
-	 printf("Faltan argumentos\n");
-	 printf("Consumidor o Productor deben tener nombre del buffer y tiempo promedio como argumentos de entrada\n");
+	 printf("ERROR: Faltan argumentos\n");
+	 printf("Consumidor o Productor deben tener nombre (-b) del buffer y tiempo promedio (-t) como argumentos de entrada\n");
          exit(-1);
       } else if (size_on == 1){
-         printf("Sobran argumentos\n");
-         printf("Consumidor o Productor no necesitan argumentos de tamano\n");
+         printf("ERROR: Sobran argumentos\n");
+         printf("Consumidor o Productor no necesitan argumentos de tamano (-s)\n");
          exit(-1);
       }
    }
    else if(modo == 2){ // Finalizador
       if(buffer_on == 0){
-	 printf("Faltan argumentos\n");
-	 printf("Finalizador debe tener nombre del buffer como argumento de entrada\n");
+	 printf("ERROR: Faltan argumentos\n");
+	 printf("Finalizador debe tener nombre (-b) del buffer como argumento de entrada\n");
          exit(-1);
       } else if (time_on == 1 || size_on == 1){
-         printf("Sobran argumentos\n");
-         printf("Finalizador no necesita argumentos de tiempo promedio ni de tamano\n");
+         printf("ERROR: Sobran argumentos\n");
+         printf("Finalizador no necesita argumentos de tiempo promedio (-t) ni de tamano (-s)\n");
          exit(-1);
       }
    }

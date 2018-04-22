@@ -103,8 +103,9 @@ int main(int argc,char *argv[]){
       printf("indicep : %ld\n",*indicep);
       printf("indicec : %ld\n",*indicec);
       printf("tamano : %ld\n",*tamano);
-      s = &shm[SHSIZE]; 
-	   for(long int i = 0;i<*tamano;i++){
+      s = &shm[SHSIZE];
+           long int i = 0; 
+	   for(i = 0;i<*tamano;i++){
 	      // escribe el mensaje(id del prod,fecha y hora,llave aleatoria entre 0 y 4)
 	      //long int,time_t,int
 	      memset(s, 0, sizeof(long int));
