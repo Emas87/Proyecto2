@@ -5,6 +5,7 @@
 #include <time.h>
 #include "Semaforo.h"
 #include "decoder.h"
+#include "run.h"
 
 #define SHSIZE 24 //8 bytes para index de prod,8 bytes para index de consumidores, 8 bytes para tamano del buffer
 #define SEMSIZE 4 //solo 4 semaforos se ocupan, para el buffer, para la banndera, y para los dos contadores
@@ -43,6 +44,15 @@ void shmunmap(int shmid,char *shm){
 
 
 int main(int argc,char *argv[]){
+   int modo= 2;
+   char buff[100];
+   char *buffer; buffer = buff;
+   long int tam;
+   long int* tamano;tamano = &tam;
+   double tiem;
+   double* tiempo;tiempo = &tiem;
+   parser(modo, &buffer, tamano, tiempo, argc, argv);
+
    time_t antes,despues;   
    int MSJSIZE = sizeof(long int) + sizeof(time_t) + sizeof(int);//se define asi para que pueda ser portable
 
@@ -55,7 +65,7 @@ int main(int argc,char *argv[]){
 
    time ( &antes );//Calcular tiempo que dura el finalizador
 
-   s = "buffer";
+   s = buffer;
    key = decoder(s); //key del buffer
    s = "bandera";   
    key_bandera=decoder(s); //key de la bandera
@@ -70,7 +80,7 @@ int main(int argc,char *argv[]){
    semid = getSemaphore(key_semaforo);
    printf("semid: %d\n",semid);
 
-   shmid_buf = shmmap(key,&shm,SHSIZE+(MSJSIZE)*5); //modificar 5 por variable de entrada
+   shmid_buf = shmmap(key,&shm,0);
    shmid_bandera = shmmap(key_bandera,&shm_bandera,1); //char
    shmid_cont_prod = shmmap(key_cont_prod,(char **)&shm_cont_prod,8);//long int
    shmid_cont_cons = shmmap(key_cont_cons,(char **)&shm_cont_cons,8);//long int
@@ -82,14 +92,14 @@ int main(int argc,char *argv[]){
    Signal(semid,1); //protocolo de salida
 
 
-   //Escribir en todas las posiciones de memoria TODO: se ocupa asegurar que ningun productor vaya a sobreescribir sobre esto
+   //Escribir en todas las posiciones de memoria 
    Wait(semid,0); //protocolo de entrada
       s = shm;
       long int *indicep = (long int*)s;
       s+=8;
       long int *indicec = (long int*)s;
       s+=8;
-      long int *tamano = (long int*)s;
+      tamano = (long int*)s;
       printf("indicep : %ld\n",*indicep);
       printf("indicec : %ld\n",*indicec);
       printf("tamano : %ld\n",*tamano);

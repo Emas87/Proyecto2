@@ -3,10 +3,8 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <regex.h>
-#include <math.h>
-#include "dist.h"
 
-void funcion(int modo, char *buffer_name, long int* size, double*average_time, int argc, char *argv[]){
+void parser(int modo, char *buffer_name[], long int* size, double*average_time, int argc, char *argv[]){
 
    int status;
    regex_t re;
@@ -103,14 +101,14 @@ void funcion(int modo, char *buffer_name, long int* size, double*average_time, i
       // Buffer
       if(strcmp(opciones[i],"-b") == 0){
          buffer_on = 1;
-         buffer_name = parametros[i+1];
-         for(j = 0; j < strlen(buffer_name); j++){
-            if(!(buffer_name[j]>='a' && buffer_name[j]<='z')){
+         *buffer_name = parametros[i+1];
+         for(j = 0; j < (int)strlen(*buffer_name); j++){
+            if(!((*buffer_name)[j]>='a' && (*buffer_name)[j]<='z')){
               printf("ERROR: La opcion %s solo acepta letras minusculas sin numeros\n", opciones[i]);
               exit(-1);
             } 
          }
-         printf("Buffer: %s\n", buffer_name);
+         printf("Buffer: %s\n", *buffer_name);
       }
 
       // Size 
@@ -121,7 +119,7 @@ void funcion(int modo, char *buffer_name, long int* size, double*average_time, i
            printf("Tamano no puede ser mayor a 8 digitos\n");
            exit(-1);
          }
-         for(j = 0; j < strlen(size_s); j++){
+         for(j = 0; j < (int)strlen(size_s); j++){
             if(!(size_s[j]>='0' && size_s[j]<='9')){
               printf("ERROR: La opcion %s solo acepta numeros enteros\n", opciones[i]);
               exit(-1);
@@ -140,7 +138,7 @@ void funcion(int modo, char *buffer_name, long int* size, double*average_time, i
            printf("El punto decimal se cuenta como un digito\n");
            exit(-1);
          }
-         for(j = 0; j < strlen(average_time_s); j++){
+         for(j = 0; j < (int)strlen(average_time_s); j++){
             if(!(average_time_s[j]>='0' && average_time_s[j]<='9')){
               if(!(average_time_s[j]==46)){ // Es un punto
                 printf("ERROR: La opcion %s solo acepta numeros de punto flotante utilizando punto como separador\n", opciones[i]);
@@ -201,7 +199,7 @@ void funcion(int modo, char *buffer_name, long int* size, double*average_time, i
    }
 }
 
-int main(int argc,char *argv[]){
+/*int main(int argc,char *argv[]){
    int modo= 1;
    char *buffer;
    long int* tamano;
@@ -220,4 +218,4 @@ int main(int argc,char *argv[]){
 
   
    return 0;
-}
+}*/

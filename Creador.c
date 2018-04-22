@@ -4,6 +4,8 @@
 #include <sys/shm.h>
 #include "Semaforo.h"
 #include "decoder.h"
+#include "run.h"
+
 
 #define SHSIZE 24 //8 bytes para index de prod,8 bytes para index de consumidores, 8 bytes para tamano del buffer
 #define SEMSIZE 4 //solo 4 semaforos se ocupan, para el buffer, para la banndera, y para los dos contadores
@@ -42,6 +44,15 @@ void shmunmap(int shmid,char *shm){
 
 
 int main(int argc,char *argv[]){
+   int modo= 0;
+   char buff[100];
+   char *buffer; buffer = buff;
+   long int tam;
+   long int* tamano;tamano = &tam;
+   double tiem;
+   double* tiempo;tiempo = &tiem;
+   parser(modo, &buffer, tamano, tiempo, argc, argv);
+
    int MSJSIZE = sizeof(long int) + sizeof(time_t) + sizeof(int);//se define asi para que pueda ser portable
 
    int shmid_buf,shmid_bandera,shmid_cont_prod,shmid_cont_cons;
@@ -51,7 +62,7 @@ int main(int argc,char *argv[]){
    char *s;
    int semid = 0,sem_size = SEMSIZE;
 
-   s = "buffer";
+   s = buffer;
    key = decoder(s); //key del buffer
    s = "bandera";   
    key_bandera=decoder(s); //key de la bandera
@@ -66,7 +77,7 @@ int main(int argc,char *argv[]){
    semid = Semaforo(key_semaforo,sem_size);
    printf("semid: %d\n",semid);
 
-   shmid_buf = shmmap(key,&shm,SHSIZE+(MSJSIZE)*5); //modificar 5 por variable de entrada
+   shmid_buf = shmmap(key,&shm,SHSIZE+(MSJSIZE) * *tamano); //modificar 5 por variable de entrada
    shmid_bandera = shmmap(key_bandera,&shm_bandera,1); //char
    shmid_cont_prod = shmmap(key_cont_prod,(char **)&shm_cont_prod,8);//long int
    shmid_cont_cons = shmmap(key_cont_cons,(char **)&shm_cont_cons,8);//long int
@@ -74,12 +85,12 @@ int main(int argc,char *argv[]){
    memcpy(shm_bandera,"0",1);
    *shm_cont_prod = 0;
    *shm_cont_cons = 0;
-   int init = 0;
+   long int init = 0;
    memcpy(shm,&init,sizeof(long int));//indice de productor = 0
    s = &shm[8];
    memcpy(s,&init,sizeof(long int));//indice de consumidor = 0
    s = &shm[16];   
-   init = 5;   
+   init = *tamano;   
    memcpy(s,&init,sizeof(long int));//escribir tmanao del buffer
    
    return 0;

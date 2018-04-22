@@ -8,7 +8,8 @@
 #include <time.h>
 #include "Semaforo.h"
 #include "decoder.h"
-
+#include "run.h"
+#include "dist.h"
 
 #define SHSIZE 24
 
@@ -40,6 +41,15 @@ void shmunmap(int shmid,char *shm){
 }
 
 int main(int argc,char *argv[]){
+   int modo= 1;
+   char buff[100];
+   char *buffer; buffer = buff;
+   long int tam;
+   long int* tamano;tamano = &tam;
+   double tiem;
+   double* tiempo;tiempo = &tiem;
+   parser(modo, &buffer, tamano, tiempo, argc, argv);
+
    int shmid_buf,shmid_bandera,shmid_cont_prod,shmid_cont_cons;
    int MSJSIZE = sizeof(long int) + sizeof(time_t) + sizeof(int);//se define asi para que pueda ser portable
    long int numero_mensajes_enviados=0;
@@ -52,7 +62,7 @@ int main(int argc,char *argv[]){
 
    // Leer datos de la linea de comandos
    //
-   s = "buffer";
+   s = buffer;
    key = decoder(s); //key del buffer
    s = "bandera";   
    key_bandera=decoder(s); //key de la bandera
@@ -63,7 +73,7 @@ int main(int argc,char *argv[]){
    s = "semaforo";   
    key_semaforo = decoder(s); //key del semaforo
 
-   shmid_buf = shmmap(key,&shm,SHSIZE+(MSJSIZE)*5);
+   shmid_buf = shmmap(key,&shm,SHSIZE+(MSJSIZE)* *tamano);
    shmid_bandera = shmmap(key_bandera,&shm_bandera,1);
    shmid_cont_prod = shmmap(key_cont_prod,(char **)&shm_cont_prod,4);
    shmid_cont_cons = shmmap(key_cont_cons,(char **)&shm_cont_cons,4);
@@ -86,10 +96,11 @@ int main(int argc,char *argv[]){
 
 	srand((unsigned)time(NULL));
    while(bandera != '1'){
-      // En el loop se genera el tiempo de espera aleatorio, se espera y
+      // En el loop se genera el tiempo de espera aleatorio, se espera 
       // se pide el semaforo con wait    Wait(semid);
+      double espera = dist(*tiempo);
       time ( &antes );//Calcular tiempo que esta en el sleep
-      sleep(1);
+      sleep((int)espera);
       time ( &despues );
       acumulado_tiempo_esperados+=despues-antes;
 
