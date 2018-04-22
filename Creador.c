@@ -6,7 +6,7 @@
 #include "decoder.h"
 
 #define SHSIZE 24 //8 bytes para index de prod,8 bytes para index de consumidores, 8 bytes para tamano del buffer
-#define SEMSIZE 4 //Creo que son solo 4 semaforos que se ocupan, para el buffer, para la banndera, y para los dos contadores
+#define SEMSIZE 4 //solo 4 semaforos se ocupan, para el buffer, para la banndera, y para los dos contadores
 //0 buffer
 //1 bandera
 //2 contador Productores
@@ -71,7 +71,7 @@ int main(int argc,char *argv[]){
    shmid_cont_prod = shmmap(key_cont_prod,(char **)&shm_cont_prod,8);//long int
    shmid_cont_cons = shmmap(key_cont_cons,(char **)&shm_cont_cons,8);//long int
    //getSemaphore(key_semaforo);
-
+/*
    memcpy(shm_bandera,"0",1);
    *shm_cont_prod = 0;
    *shm_cont_cons = 0;
@@ -84,7 +84,7 @@ int main(int argc,char *argv[]){
    s = shm;
    //s =s + 4;
    *s = 0;
-
+*/
    char bandera = '0';
    while(bandera != '1'){
       sleep(1);

@@ -14,7 +14,8 @@ int Semaforo(key_t key, int sem_size ){
       exit(-1);
    } else if (id != -1){
       //inicializar semaforos
-      for(int i =0;i<sem_size;i++){
+      int i;
+      for(i =0;i<sem_size;i++){
          sbuf.sem_num = i;
          sbuf.sem_op = ValorInicial;  /* This is the number of runs without queuing. */
          sbuf.sem_flg = 0;
