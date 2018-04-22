@@ -108,6 +108,17 @@ int main(int argc,char *argv[]){
          s = &shm[SHSIZE]; // a partir del byte SHSIZE esta el array para los mensajes
          s+= MSJSIZE*indice;//apuntar la posicion para escribir mensaje
 
+         //Verificar bandera para no sobreescribir ningun mensaje que haya escrito el Finalizador
+         time ( &antes );//Calcular tiempo que esta bloqueado por el semaforo      
+         Wait(semid,1); //protocolo de entrada
+            time ( &despues );
+            acumulado_tiempo_bloquedo+=despues-antes;
+            bandera = *shm_bandera;
+         Signal(semid,1); //protocolo de salida
+         if(bandera == '1'){
+            Signal(semid,0); //protocolo de salida
+            break;
+         }
          // escribe el mensaje(id del prod,fecha y hora,llave aleatoria entre 0 y 4)
          //long int,time_t,int
          memcpy(s,&id,sizeof(long int));

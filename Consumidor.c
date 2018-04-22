@@ -128,7 +128,6 @@ int main(int argc,char *argv[]){
 
          printf("Se leyo mensaje:\nIndice: %ld\nCantidad de productores: %ld\nCantidad de consumidores: %ld\n",indice,contador_Prod,contador_Cons);
 
-         printf("tamano : %ld\n",nbuffer);
          //Aumentar el indice
          s = &shm[8];      
          indice++;
