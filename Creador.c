@@ -7,7 +7,7 @@
 #include "run.h"
 
 
-#define SHSIZE 24 //8 bytes para index de prod,8 bytes para index de consumidores, 8 bytes para tamano del buffer
+#define SHSIZE 24 //8 bytes para index de prod,8 bytes para index de consumidores, 8 bytes para tamano del buffer 
 #define SEMSIZE 4 //solo 4 semaforos se ocupan, para el buffer, para la banndera, y para los dos contadores
 //0 buffer
 //1 bandera
@@ -75,7 +75,6 @@ int main(int argc,char *argv[]){
    
    //Semaforo
    semid = Semaforo(key_semaforo,sem_size);
-   printf("semid: %d\n",semid);
 
    shmid_buf = shmmap(key,&shm,SHSIZE+(MSJSIZE) * *tamano); //modificar 5 por variable de entrada
    shmid_bandera = shmmap(key_bandera,&shm_bandera,1); //char
@@ -83,15 +82,18 @@ int main(int argc,char *argv[]){
    shmid_cont_cons = shmmap(key_cont_cons,(char **)&shm_cont_cons,8);//long int
 
    memcpy(shm_bandera,"0",1);
-   *shm_cont_prod = 0;
-   *shm_cont_cons = 0;
    long int init = 0;
+   memcpy(shm_cont_prod,&init,sizeof(long int));//contador de productor = 0
+   memcpy(shm_cont_cons,&init,sizeof(long int));//contador de productor = 0
    memcpy(shm,&init,sizeof(long int));//indice de productor = 0
    s = &shm[8];
    memcpy(s,&init,sizeof(long int));//indice de consumidor = 0
    s = &shm[16];   
    init = *tamano;   
    memcpy(s,&init,sizeof(long int));//escribir tmanao del buffer
-   
+   s = &shm[24];
+   init = 0;   
+   memcpy(s,&init,sizeof(long int));//ID de consumidor = 0
+
    return 0;
 }

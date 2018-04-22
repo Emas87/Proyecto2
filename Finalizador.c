@@ -7,7 +7,7 @@
 #include "decoder.h"
 #include "run.h"
 
-#define SHSIZE 24 //8 bytes para index de prod,8 bytes para index de consumidores, 8 bytes para tamano del buffer
+#define SHSIZE 24 //8 bytes para index de prod,8 bytes para index de consumidores, 8 bytes para tamano del buffer y 8 bytes para llevar el ultimo ID de consumidores
 #define SEMSIZE 4 //solo 4 semaforos se ocupan, para el buffer, para la banndera, y para los dos contadores
 //0 buffer
 //1 bandera
@@ -118,7 +118,7 @@ int main(int argc,char *argv[]){
 
    long int contador_Prod = 1;
    long int contador_Cons = 1;
-   while(contador_Prod != 0 | contador_Cons != 0){
+   while(contador_Prod > 0 | contador_Cons > 0){
       Wait(semid,2); //protocolo de entrada
          contador_Prod = *shm_cont_prod;
       Signal(semid,2); //protocolo de salida

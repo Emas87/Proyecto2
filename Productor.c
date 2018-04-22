@@ -11,7 +11,8 @@
 #include "run.h"
 #include "dist.h"
 
-#define SHSIZE 24
+
+#define SHSIZE 24 //8 bytes para index de prod,8 bytes para index de consumidores, 8 bytes para tamano del buffer y 8 bytes para llevar el ultimo ID de consumidores
 
 int shmmap(key_t key,char **shm,int shsize){
    int shmid = shmget(key,shsize,0666);
@@ -113,7 +114,7 @@ int main(int argc,char *argv[]){
          // se lee la posicion del buffer(indice), leyendo la primera posicion del buffer
          long int indice = (long int)shm[0];
          long int nbuffer = (long int)shm[16];
-         s = &shm[16];
+         s = &shm[16];//se va escribir el tamano, por alguna razon si no se reeescribe el finalizador no logra ver esto
          memcpy(s,&nbuffer,sizeof(long int));
 
          s = &shm[SHSIZE]; // a partir del byte SHSIZE esta el array para los mensajes

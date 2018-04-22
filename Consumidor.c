@@ -11,7 +11,7 @@
 #include "run.h"
 #include "dist.h"
 
-#define SHSIZE 24
+#define SHSIZE 24 //8 bytes para index de prod,8 bytes para index de consumidores, 8 bytes para tamano del buffer
 
 int shmmap(key_t key,char **shm,int shsize){
    int shmid = shmget(key,shsize,0666);
@@ -79,13 +79,13 @@ int main(int argc,char *argv[]){
    shmid_cont_cons = shmmap(key_cont_cons,(char **)&shm_cont_cons,4);
    semid = getSemaphore(key_semaforo);
 
-   // Se obtiene el id del consumidor leyendo la shm de contador de consumidor
-   // se usa el semaforo antes de leerlo, se asigna el id, se escribe y se hace Signal(semid);
-   long int id = 0;
+   //Se aumenta el contador de consumidor
+   long int id = 0;   
    Wait(semid,3); //protocolo de entrada
       id = *shm_cont_cons; id++;
       *shm_cont_cons = id;
    Signal(semid,3); //protocolo de salida
+   
    
    
    // Se crea un loop hasta que se active la bandera
@@ -172,7 +172,7 @@ int main(int argc,char *argv[]){
    Signal(semid,3); //protocolo de salida
 
    //Al terminar imprime su informacion
-   printf("Termino consumidor\nId: %ld\nNumero de mensajes recibidos: %ld\nAcumulado de tiempo esperados: %lf\nAcumulado de tiempo de espera:%lf\n",id,numero_mensajes_enviados,acumulado_tiempo_esperados,acumulado_tiempo_bloquedo);
+   printf("Termino consumidor\nNumero de mensajes recibidos: %ld\nAcumulado de tiempo esperados: %lf\nAcumulado de tiempo de espera:%lf\n",numero_mensajes_enviados,acumulado_tiempo_esperados,acumulado_tiempo_bloquedo);
 
    // Salir
    return 0;
