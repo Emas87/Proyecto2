@@ -116,8 +116,8 @@ int main(int argc,char *argv[]){
          printf("AL: %d\n", *aleatorio);
 
          if(*id_prod == 0 && *aleatorio == 0 && *t == 0){
-            eom = 1;
-            printf("EOM: %d\n", eom);
+            Signal(semid,0); //protocolo de salida
+            break;
          }
 
          // se imprime en consola describiendo la accion realizada,incluyendo el indice y la cantidad de prod/consum
