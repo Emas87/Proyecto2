@@ -6,7 +6,7 @@
 #include <math.h>
 #include "dist.h"
 
-void funcion(int modo,char *buffer_name,long int* size,double*average_time,int argc,char *argv[]){
+void funcion(int modo, char *buffer_name, long int* size, double*average_time, int argc, char *argv[]){
 
    int status;
    regex_t re;
@@ -46,7 +46,7 @@ void funcion(int modo,char *buffer_name,long int* size,double*average_time,int a
       if(!status){
          if(i%2!=0){
             printf("ERROR: Formato incorrecto en argumento %s\n", argv[i+1] );
-            printf("El formato adecuado es: Programa -opcion parametro\n");
+            printf("El formato adecuado es: Programa -opcion parametro -opcion parametro\n");
             exit(-1);
          }
          cant_opc += 1;
@@ -95,9 +95,14 @@ void funcion(int modo,char *buffer_name,long int* size,double*average_time,int a
 
 
    // Revisar que tipo de opciones se ingresaron 
+   int buffer_on = 0;
+   int size_on = 0;
+   int time_on = 0;
+
    for(i = 0;i < argc - 1 ; i++){
       // Buffer
-      if(strcmp(opciones[i],"-buffer") == 0){
+      if(strcmp(opciones[i],"-b") == 0){
+         buffer_on = 1;
          buffer_name = parametros[i+1];
          for(j = 0; j < strlen(buffer_name); j++){
             if(!(buffer_name[j]>='a' && buffer_name[j]<='z')){
@@ -109,7 +114,8 @@ void funcion(int modo,char *buffer_name,long int* size,double*average_time,int a
       }
 
       // Size 
-      else if(strcmp(opciones[i],"-size") == 0){
+      else if(strcmp(opciones[i],"-s") == 0){
+         size_on = 1;
          char *size_s = parametros[i+1];
          if(strlen(size_s)>8){
            printf("Tamano no puede ser mayor a 8 digitos\n");
@@ -121,12 +127,13 @@ void funcion(int modo,char *buffer_name,long int* size,double*average_time,int a
               exit(-1);
             } 
          }
-         size = atoi(size_s);
-         printf("Size: %d\n", size);
+         *size = atoi(size_s);
+         printf("Size: %ld\n", *size);
       } 
 
       // Time
-      else if(strcmp(opciones[i],"-time") == 0){
+      else if(strcmp(opciones[i],"-t") == 0){
+         time_on = 1;
          char *average_time_s = parametros[i+1];
          if(strlen(average_time_s)>10){
            printf("Tiempo no puede ser mayor a 10 digitos\n");
@@ -141,8 +148,10 @@ void funcion(int modo,char *buffer_name,long int* size,double*average_time,int a
               }
             } 
          }
-         average_time = atof(average_time_s);
-         printf("Time: %.10lf\n", average_time);
+
+         double av_time = atof(average_time_s);
+         *average_time = av_time;
+         printf("Time: %.10lf\n", *average_time);
       } 
 
       // Opcion default
@@ -152,27 +161,55 @@ void funcion(int modo,char *buffer_name,long int* size,double*average_time,int a
 
       // Opcion invalida, se intenta usar una opcion invalida -d, -x, etc.
       else { 
-         printf("Opcion %s invalida\n",opciones[i]);         exit(-1);
+         printf("Opcion %s invalida\n",opciones[i]);
+         exit(-1);
       }
    }
 
+   if(modo == 0){ // Creador
+      if(buffer_on == 0 || size_on == 0){
+	 printf("Faltan argumentos\n");
+	 printf("Creador debe tener nombre del buffer y tamano como argumentos de entrada\n");
+         exit(-1);
+      } else if (time_on == 1){
+         printf("Sobran argumentos\n");
+         printf("Creador no necesita argumentos de tiempo promedio\n");
+         exit(-1);
+      }
+   }
+   else if(modo == 1){ // Consumidor-Productor
+      if(buffer_on == 0 || time_on == 0){
+	 printf("Faltan argumentos\n");
+	 printf("Consumidor o Productor deben tener nombre del buffer y tiempo promedio como argumentos de entrada\n");
+         exit(-1);
+      } else if (size_on == 1){
+         printf("Sobran argumentos\n");
+         printf("Consumidor o Productor no necesitan argumentos de tamano\n");
+         exit(-1);
+      }
+   }
+   else if(modo == 2){ // Finalizador
+      if(buffer_on == 0){
+	 printf("Faltan argumentos\n");
+	 printf("Finalizador debe tener nombre del buffer como argumento de entrada\n");
+         exit(-1);
+      } else if (time_on == 1 || size_on == 1){
+         printf("Sobran argumentos\n");
+         printf("Finalizador no necesita argumentos de tiempo promedio ni de tamano\n");
+         exit(-1);
+      }
+   }
 }
 
 int main(int argc,char *argv[]){
-   int modo= 0;
+   int modo= 1;
    char *buffer;
    long int* tamano;
    double* tiempo;
-   funcion( modo,buffer, tamano,tiempo, argc,argv);
-
-   //testeo de variables de salida
-
-   //
+   funcion(modo, buffer, tamano, tiempo, argc, argv);
 
 
-   //dist(average_time);
-   
-
+  
    // Creador -> Nombre del Buffer, Tamano en entradas para msjs
 
    // Productor -> Nombre del Buffer, Parametro media tiempo aleatorio
