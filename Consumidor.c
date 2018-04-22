@@ -53,7 +53,7 @@ int main(int argc,char *argv[]){
    int shmid_buf,shmid_bandera,shmid_cont_prod,shmid_cont_cons;
    int MSJSIZE = sizeof(long int) + sizeof(time_t) + sizeof(int);//se define asi para que pueda ser portable
    long int numero_mensajes_enviados=0;
-   double acumulado_tiempo_esperados=0,acumulado_tiempo_bloquedo=0;
+   double acumulado_tiempo_esperados=0.0,acumulado_tiempo_bloquedo=0.0;
    char *shm = NULL, *shm_bandera = NULL;
    long int *shm_cont_prod = NULL,*shm_cont_cons = NULL;
    key_t key,key_semaforo,key_bandera,key_cont_prod,key_cont_cons;
@@ -94,6 +94,8 @@ int main(int argc,char *argv[]){
    long int contador_Prod = 0;
    long int contador_Cons = 0;
 
+   initrand();
+
    int eom = 0;
    while(eom != 1){
       // En el loop se genera el tiempo de espera aleatorio, se espera y
@@ -126,7 +128,10 @@ int main(int argc,char *argv[]){
          printf("TM: %ld\n", *t);
          printf("AL: %d\n", *aleatorio);
 
-         if(*id_prod == 0 && *aleatorio == 0 && *t == 0){
+         int PID = getpid();
+         printf("PID: %d\n", PID);
+
+         if((*id_prod == 0 && *aleatorio == 0 && *t == 0) || (PID%5 == *aleatorio)){
             Signal(semid,0); //protocolo de salida
             break;
          }
@@ -172,7 +177,7 @@ int main(int argc,char *argv[]){
    Signal(semid,3); //protocolo de salida
 
    //Al terminar imprime su informacion
-   printf("Termino consumidor\nNumero de mensajes recibidos: %ld\nAcumulado de tiempo esperados: %lf\nAcumulado de tiempo de espera:%lf\n",numero_mensajes_enviados,acumulado_tiempo_esperados,acumulado_tiempo_bloquedo);
+   printf("Termino consumidor\nNumero de mensajes recibidos: %ld\nAcumulado de tiempo esperados: %lf\nAcumulado de tiempo de espera (bloqueado): %lf\n",numero_mensajes_enviados,acumulado_tiempo_esperados,acumulado_tiempo_bloquedo);
 
    // Salir
    return 0;

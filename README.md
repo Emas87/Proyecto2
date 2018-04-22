@@ -20,13 +20,13 @@ arreglar los tiempos del final
 
 all:
 transformar el buffer para administracion circular? se ocupa un puntero, podemos utilizar el mimso buffer para el puntero, le asiganamos la primer posicion al puntero, antes de leer y escribir se revisa el puntero(check)
-arreglar mensajes del parser
-limitar el tamano del nombre del buffer
+arreglar mensajes del parser (check)
+limitar el tamano del nombre del buffer (check)
 hacer pruebas
 *arreglar codigo
 
 getSemaphore(check)
 
 Consumidor:
-aleatorio % 5 =ID
-ID de consumidor no puede ser el contador
+aleatorio = PID % 5 (check)
+ID de consumidor no puede ser el contador(N/A)

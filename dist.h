@@ -10,8 +10,6 @@ void initrand() {
 
 double dist(double media){
 
-  initrand();
-
   double u = rand() / (RAND_MAX + 1.0);
 
   // Formula = -ln(1-u)/lambda
