@@ -90,7 +90,7 @@ int main(int argc,char *argv[]){
    
    // Se crea un loop hasta que se active la bandera
    char bandera = '0';
-   time_t antes,despues;
+   struct timespec antes,despues;
    long int contador_Prod = 0;
    long int contador_Cons = 0;
 
@@ -101,16 +101,16 @@ int main(int argc,char *argv[]){
       // En el loop se genera el tiempo de espera aleatorio, se espera y
       // se pide el semaforo con wait    Wait(semid);
       double espera = dist(*tiempo);      
-      time ( &antes );//Calcular tiempo que esta en el sleep
+      clock_gettime ( CLOCK_REALTIME,  &antes );//Calcular tiempo que esta en el sleep
       sleep((int)espera);
-      time ( &despues );
-      acumulado_tiempo_esperados+=despues-antes;
+      clock_gettime ( CLOCK_REALTIME,  &despues );
+      acumulado_tiempo_esperados += (despues.tv_sec - antes.tv_sec) + (despues.tv_nsec - antes.tv_nsec)*1e-9;
 
 
-      time ( &antes );//Calcular tiempo que esta bloqueado por el semaforo
+      clock_gettime ( CLOCK_REALTIME,  &antes );//Calcular tiempo que esta bloqueado por el semaforo
       Wait(semid,0); //protocolo de entrada
-         time ( &despues );
-         acumulado_tiempo_bloquedo+=despues-antes;
+         clock_gettime ( CLOCK_REALTIME,  &despues );
+         acumulado_tiempo_bloquedo += (despues.tv_sec - antes.tv_sec) + (despues.tv_nsec - antes.tv_nsec)*1e-9;
 
          // se lee la posicion del buffer(indice), leyendo la primera posicion del buffer
          long int indice = (long int)shm[8];
@@ -137,17 +137,17 @@ int main(int argc,char *argv[]){
          }
 
          // se imprime en consola describiendo la accion realizada,incluyendo el indice y la cantidad de prod/consum
-         time ( &antes );//Calcular tiempo que esta bloqueado por el semaforo
+         clock_gettime ( CLOCK_REALTIME,  &antes );//Calcular tiempo que esta bloqueado por el semaforo
          Wait(semid,2); //protocolo de entrada
-            time ( &despues );
-            acumulado_tiempo_bloquedo+=despues-antes;
+            clock_gettime ( CLOCK_REALTIME,  &despues );
+            acumulado_tiempo_bloquedo += (despues.tv_sec - antes.tv_sec) + (despues.tv_nsec - antes.tv_nsec)*1e-9;
             contador_Prod = *shm_cont_prod;
          Signal(semid,2); //protocolo de salida
 
-         time ( &antes );//Calcular tiempo que esta bloqueado por el semaforo
+         clock_gettime ( CLOCK_REALTIME,  &antes );//Calcular tiempo que esta bloqueado por el semaforo
          Wait(semid,3); //protocolo de entrada
-            time ( &despues );
-            acumulado_tiempo_bloquedo+=despues-antes;
+            clock_gettime ( CLOCK_REALTIME,  &despues );
+            acumulado_tiempo_bloquedo += (despues.tv_sec - antes.tv_sec) + (despues.tv_nsec - antes.tv_nsec)*1e-9;
             contador_Cons = *shm_cont_cons;
          Signal(semid,3); //protocolo de salida
 
@@ -167,17 +167,17 @@ int main(int argc,char *argv[]){
    }
    
    // Luego de activarse la bandera se debe decrementar el contador de cons
-   time ( &antes );//Calcular tiempo que esta bloqueado por el semaforo      
+   clock_gettime ( CLOCK_REALTIME,  &antes );//Calcular tiempo que esta bloqueado por el semaforo      
    Wait(semid,3); //protocolo de entrada
-   time ( &despues );
-   acumulado_tiempo_bloquedo+=despues-antes;
+   clock_gettime ( CLOCK_REALTIME,  &despues );
+   acumulado_tiempo_bloquedo += (despues.tv_sec - antes.tv_sec) + (despues.tv_nsec - antes.tv_nsec)*1e-9;
 
    contador_Cons = *shm_cont_cons; contador_Cons--;
    *shm_cont_cons = contador_Cons;
    Signal(semid,3); //protocolo de salida
 
    //Al terminar imprime su informacion
-   printf("Termino consumidor\nNumero de mensajes recibidos: %ld\nAcumulado de tiempo esperados: %lf\nAcumulado de tiempo de espera (bloqueado): %lf\n",numero_mensajes_enviados,acumulado_tiempo_esperados,acumulado_tiempo_bloquedo);
+   printf("Termino consumidor\nNumero de mensajes recibidos: %ld\nAcumulado de tiempo esperados: %.10lf\nAcumulado de tiempo de espera (bloqueado): %.10lf\n",numero_mensajes_enviados,acumulado_tiempo_esperados,acumulado_tiempo_bloquedo);
 
    // Salir
    return 0;

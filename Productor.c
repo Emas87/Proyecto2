@@ -91,7 +91,7 @@ int main(int argc,char *argv[]){
    
    // Se crea un loop hasta que se active la bandera
    char bandera = '0';
-   time_t antes,despues;
+   struct timespec antes,despues;
    long int contador_Prod = 0;
    long int contador_Cons = 0;
 
@@ -101,16 +101,16 @@ int main(int argc,char *argv[]){
       // En el loop se genera el tiempo de espera aleatorio, se espera 
       // se pide el semaforo con wait    Wait(semid);
       double espera = dist(*tiempo);
-      time ( &antes );//Calcular tiempo que esta en el sleep
+      clock_gettime ( CLOCK_REALTIME,  &antes );//Calcular tiempo que esta en el sleep
       sleep((int)espera);
-      time ( &despues );
-      acumulado_tiempo_esperados+=despues-antes;
+      clock_gettime ( CLOCK_REALTIME,  &despues );
+      acumulado_tiempo_esperados += (despues.tv_sec - antes.tv_sec) + (despues.tv_nsec - antes.tv_nsec)*1e-9;
 
 
-      time ( &antes );//Calcular tiempo que esta bloqueado por el semaforo
+      clock_gettime ( CLOCK_REALTIME,  &antes );//Calcular tiempo que esta bloqueado por el semaforo
       Wait(semid,0); //protocolo de entrada
-         time ( &despues );
-         acumulado_tiempo_bloquedo+=despues-antes;
+         clock_gettime ( CLOCK_REALTIME,  &despues );
+         acumulado_tiempo_bloquedo += (despues.tv_sec - antes.tv_sec) + (despues.tv_nsec - antes.tv_nsec)*1e-9;
 
          // se lee la posicion del buffer(indice), leyendo la primera posicion del buffer
          long int indice = (long int)shm[0];
@@ -122,10 +122,10 @@ int main(int argc,char *argv[]){
          s+= MSJSIZE*indice;//apuntar la posicion para escribir mensaje
 
          //Verificar bandera para no sobreescribir ningun mensaje que haya escrito el Finalizador
-         time ( &antes );//Calcular tiempo que esta bloqueado por el semaforo      
+         clock_gettime ( CLOCK_REALTIME,  &antes );//Calcular tiempo que esta bloqueado por el semaforo      
          Wait(semid,1); //protocolo de entrada
-            time ( &despues );
-            acumulado_tiempo_bloquedo+=despues-antes;
+            clock_gettime ( CLOCK_REALTIME,  &despues );
+            acumulado_tiempo_bloquedo += (despues.tv_sec - antes.tv_sec) + (despues.tv_nsec - antes.tv_nsec)*1e-9;
             bandera = *shm_bandera;
          Signal(semid,1); //protocolo de salida
          if(bandera == '1'){
@@ -144,18 +144,18 @@ int main(int argc,char *argv[]){
          memcpy(s,&aleatorio,sizeof(int));
 
          // se imprime en consola describiendo la accion realizada,incluyendo el indice y la cantidad de prod/consum
-         time ( &antes );//Calcular tiempo que esta bloqueado por el semaforo
+         clock_gettime ( CLOCK_REALTIME,  &antes );//Calcular tiempo que esta bloqueado por el semaforo
          Wait(semid,2); //protocolo de entrada
-            time ( &despues );
-            acumulado_tiempo_bloquedo+=despues-antes;
+            clock_gettime ( CLOCK_REALTIME,  &despues );
+            acumulado_tiempo_bloquedo += (despues.tv_sec - antes.tv_sec) + (despues.tv_nsec - antes.tv_nsec)*1e-9;
 
             contador_Prod = *shm_cont_prod;
          Signal(semid,2); //protocolo de salida
 
-         time ( &antes );//Calcular tiempo que esta bloqueado por el semaforo
+         clock_gettime ( CLOCK_REALTIME,  &antes );//Calcular tiempo que esta bloqueado por el semaforo
          Wait(semid,3); //protocolo de entrada
-            time ( &despues );
-            acumulado_tiempo_bloquedo+=despues-antes;
+            clock_gettime ( CLOCK_REALTIME,  &despues );
+            acumulado_tiempo_bloquedo += (despues.tv_sec - antes.tv_sec) + (despues.tv_nsec - antes.tv_nsec)*1e-9;
 
             contador_Cons = *shm_cont_cons;
          Signal(semid,3); //protocolo de salida
@@ -173,25 +173,25 @@ int main(int argc,char *argv[]){
       numero_mensajes_enviados++;
 
       //Verificar bandera
-      time ( &antes );//Calcular tiempo que esta bloqueado por el semaforo      
+      clock_gettime ( CLOCK_REALTIME,  &antes );//Calcular tiempo que esta bloqueado por el semaforo      
       Wait(semid,1); //protocolo de entrada
-         time ( &despues );
-         acumulado_tiempo_bloquedo+=despues-antes;
+         clock_gettime ( CLOCK_REALTIME,  &despues );
+         acumulado_tiempo_bloquedo += (despues.tv_sec - antes.tv_sec) + (despues.tv_nsec - antes.tv_nsec)*1e-9;
          bandera = *shm_bandera;
       Signal(semid,1); //protocolo de salida
    }
    
    // Luego de activarse la bandera se debe decrementar el contador de prod
-   time ( &antes );//Calcular tiempo que esta bloqueado por el semaforo      
+   clock_gettime ( CLOCK_REALTIME,  &antes );//Calcular tiempo que esta bloqueado por el semaforo      
    Wait(semid,2); //protocolo de entrada
-      time ( &despues );
-      acumulado_tiempo_bloquedo+=despues-antes;
+      clock_gettime ( CLOCK_REALTIME,  &despues );
+      acumulado_tiempo_bloquedo += (despues.tv_sec - antes.tv_sec) + (despues.tv_nsec - antes.tv_nsec)*1e-9;
       contador_Prod = *shm_cont_prod; contador_Prod--;
       *shm_cont_prod = contador_Prod;
    Signal(semid,2); //protocolo de salida
 
    //Al terminar imprime su informacion
-   printf("Termino productor\nId: %ld\nNumero de mensajes enviados: %ld\nAcumulado de tiempo esperados: %lf\nAcumulado de tiempo de espera (bloqueado):%lf\n",id,numero_mensajes_enviados,acumulado_tiempo_esperados,acumulado_tiempo_bloquedo);
+   printf("Termino productor\nId: %ld\nNumero de mensajes enviados: %ld\nAcumulado de tiempo esperados: %.10lf\nAcumulado de tiempo de espera (bloqueado):%.10lf\n",id,numero_mensajes_enviados,acumulado_tiempo_esperados,acumulado_tiempo_bloquedo);
 
    // Salir
    return 0;

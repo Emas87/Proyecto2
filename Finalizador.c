@@ -53,7 +53,7 @@ int main(int argc,char *argv[]){
    double* tiempo;tiempo = &tiem;
    parser(modo, &buffer, tamano, tiempo, argc, argv);
 
-   time_t antes,despues;   
+   struct timespec antes,despues;   
    int MSJSIZE = sizeof(long int) + sizeof(time_t) + sizeof(int);//se define asi para que pueda ser portable
 
    int shmid_buf,shmid_bandera,shmid_cont_prod,shmid_cont_cons;
@@ -63,7 +63,7 @@ int main(int argc,char *argv[]){
    char *s;
    int semid = 0,sem_size = SEMSIZE;
 
-   time ( &antes );//Calcular tiempo que dura el finalizador
+   clock_gettime ( CLOCK_REALTIME,  &antes );//Calcular tiempo que dura el finalizador
 
    s = buffer;
    key = decoder(s); //key del buffer
@@ -136,9 +136,9 @@ int main(int argc,char *argv[]){
    shmunmap(shmid_cont_cons,(char *)shm_cont_cons);
    RemSem(semid);
 
-   time ( &despues );
-   double acumulado_tiempo=despues-antes;
-   printf("Termino Finalizador\nTiempo de ejecucion: %lf\n",acumulado_tiempo);
+   clock_gettime ( CLOCK_REALTIME,  &despues );
+   double acumulado_tiempo = (despues.tv_sec - antes.tv_sec) + (despues.tv_nsec - antes.tv_nsec)*1e-9;
+   printf("Termino Finalizador\nTiempo de ejecucion: %.10lf\n",acumulado_tiempo);
    
    return 0;
 }
