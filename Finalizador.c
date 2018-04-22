@@ -74,29 +74,46 @@ int main(int argc,char *argv[]){
    //activar bandera para productores
    char bandera = '1';   
    Wait(semid,1); //protocolo de entrada
-   *shm_bandera = bandera;
+      *shm_bandera = bandera;
    Signal(semid,1); //protocolo de salida
 
 
    //Escribir en todas las posiciones de memoria TODO: se ocupa asegurar que ningun productor vaya a sobreescribir sobre esto
    Wait(semid,0); //protocolo de entrada
-   s = &shm[0];
-   long int *indice = (long int*)s;
-   long int *tamano = (long int*)&shm[8];
-   printf("indice : %ld\n",*indice);
-   printf("tamano : %ld\n",*tamano);
-   s = &shm[SHSIZE]; 
-   for(long int i = 0;i<*tamano;i++){
-      // escribe el mensaje(id del prod,fecha y hora,llave aleatoria entre 0 y 4)
-      //long int,time_t,int
-      memset(s, 0, sizeof(long int));
-      s+= sizeof(long int);
-      memset(s,0,sizeof(time_t));
-      s+= sizeof(time_t);
-      memset(s,0,sizeof(int));
-      s+= sizeof(int);
-   }
+      s = shm;
+      long int *indicep = (long int*)s;
+      s+=8;
+      long int *indicec = (long int*)s;
+      s+=8;
+      long int *tamano = (long int*)s;
+      printf("indicep : %ld\n",*indicep);
+      printf("indicec : %ld\n",*indicec);
+      printf("tamano : %ld\n",*tamano);
+      s = &shm[SHSIZE]; 
+	   for(long int i = 0;i<*tamano;i++){
+	      // escribe el mensaje(id del prod,fecha y hora,llave aleatoria entre 0 y 4)
+	      //long int,time_t,int
+	      memset(s, 0, sizeof(long int));
+	      s+= sizeof(long int);
+	      memset(s,0,sizeof(time_t));
+	      s+= sizeof(time_t);
+	      memset(s,0,sizeof(int));
+	      s+= sizeof(int);
+	   }
    Signal(semid,0); //protocolo de salida      
+
+   long int contador_Prod = 1;
+   long int contador_Cons = 1;
+   while(contador_Prod != 0 | contador_Cons != 0){
+      Wait(semid,2); //protocolo de entrada
+         contador_Prod = *shm_cont_prod;
+      Signal(semid,2); //protocolo de salida
+
+      Wait(semid,3); //protocolo de entrada
+         contador_Cons = *shm_cont_cons;
+      Signal(semid,3); //protocolo de salida
+   }
+
 
    shmunmap(shmid_buf,shm);
    shmunmap(shmid_bandera,shm_bandera);

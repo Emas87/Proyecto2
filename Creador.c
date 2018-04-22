@@ -70,41 +70,17 @@ int main(int argc,char *argv[]){
    shmid_bandera = shmmap(key_bandera,&shm_bandera,1); //char
    shmid_cont_prod = shmmap(key_cont_prod,(char **)&shm_cont_prod,8);//long int
    shmid_cont_cons = shmmap(key_cont_cons,(char **)&shm_cont_cons,8);//long int
-   //getSemaphore(key_semaforo);
 
    memcpy(shm_bandera,"0",1);
    *shm_cont_prod = 0;
    *shm_cont_cons = 0;
    int init = 0;
-   memcpy(shm,&init,sizeof(long int));
+   memcpy(shm,&init,sizeof(long int));//indice de productor = 0
+   s = &shm[8];
+   memcpy(s,&init,sizeof(long int));//indice de consumidor = 0
    s = &shm[16];   
    init = 5;   
-   memcpy(s,&init,sizeof(long int));
-
-   /*s = shm;
-   //s =s + 4;
-   *s = 0;
-
-   char bandera = '0';
-   while(bandera != '1'){
-      sleep(1);
-      Wait(semid,1); //protocolo de entrada
-      bandera = *shm_bandera;
-      Signal(semid,1); //protocolo de salida
-   }
-   s = &shm[SHSIZE];
-   //long int *id = (long int*)&shm[2];
-   time_t *t = (time_t*)&shm[SHSIZE+8];
-   int * aleatorio = (int*)&shm[SHSIZE+16];
-   printf("id : %ld\n",(long int)*s);
-   printf("aleatorio : %d\n",*aleatorio);
-
-   shmunmap(shmid_buf,shm);
-   shmunmap(shmid_bandera,shm_bandera);
-   shmunmap(shmid_cont_prod,(char *)shm_cont_prod);
-   shmunmap(shmid_cont_cons,(char *)shm_cont_cons);
-   RemSem(semid);*/
-
+   memcpy(s,&init,sizeof(long int));//escribir tmanao del buffer
    
    return 0;
 }

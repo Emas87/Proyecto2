@@ -96,92 +96,79 @@ int main(int argc,char *argv[]){
 
       time ( &antes );//Calcular tiempo que esta bloqueado por el semaforo
       Wait(semid,0); //protocolo de entrada
-      time ( &despues );
-      acumulado_tiempo_bloquedo+=despues-antes;
+         time ( &despues );
+         acumulado_tiempo_bloquedo+=despues-antes;
 
-      // se lee la posicion del buffer(indice), leyendo la primera posicion del buffer
-      long int indice = (long int)shm[0];
-      long int nbuffer = (long int)shm[16];
-      s = &shm[SHSIZE]; // a partir del byte SHSIZE esta el array para los mensajes
-      s+= MSJSIZE*indice;//apuntar la posicion para escribir mensaje
+         // se lee la posicion del buffer(indice), leyendo la primera posicion del buffer
+         long int indice = (long int)shm[0];
+         long int nbuffer = (long int)shm[16];
+         s = &shm[16];
+         memcpy(s,&nbuffer,sizeof(long int));
 
-      // escribe el mensaje(id del prod,fecha y hora,llave aleatoria entre 0 y 4)
-      //long int,time_t,int
-      memcpy(s,&id,sizeof(long int));
-      s+= sizeof(long int);
-      time_t rawtime;
-      time ( &rawtime );
-      memcpy(s,&rawtime,sizeof(time_t));
-      s+= sizeof(time_t);
-      int aleatorio = rand()%5;
-      memcpy(s,&aleatorio,sizeof(int));
+         s = &shm[SHSIZE]; // a partir del byte SHSIZE esta el array para los mensajes
+         s+= MSJSIZE*indice;//apuntar la posicion para escribir mensaje
 
-      //Aumentar el indice
-      indice++;
-      if(indice >= nbuffer){
-         indice = 0;
+         // escribe el mensaje(id del prod,fecha y hora,llave aleatoria entre 0 y 4)
+         //long int,time_t,int
+         memcpy(s,&id,sizeof(long int));
+         s+= sizeof(long int);
+         time_t rawtime;
+         time ( &rawtime );
+         memcpy(s,&rawtime,sizeof(time_t));
+         s+= sizeof(time_t);
+         int aleatorio = rand()%5;
+         memcpy(s,&aleatorio,sizeof(int));
+
+         // se imprime en consola describiendo la accion realizada,incluyendo el indice y la cantidad de prod/consum
+         time ( &antes );//Calcular tiempo que esta bloqueado por el semaforo
+         Wait(semid,2); //protocolo de entrada
+            time ( &despues );
+            acumulado_tiempo_bloquedo+=despues-antes;
+
+            contador_Prod = *shm_cont_prod;
+         Signal(semid,2); //protocolo de salida
+
+         time ( &antes );//Calcular tiempo que esta bloqueado por el semaforo
+         Wait(semid,3); //protocolo de entrada
+            time ( &despues );
+            acumulado_tiempo_bloquedo+=despues-antes;
+
+            contador_Cons = *shm_cont_cons;
+         Signal(semid,3); //protocolo de salida
+
+         printf("Se escribio mensaje:\nIndice: %ld\nCantidad de productores: %ld\nCantidad de consumidores: %ld\n",indice,contador_Prod,contador_Cons);
+      
+         //Aumentar el indice
+         indice++;
+         if(indice >= nbuffer){
+            indice = 0;
+         }
          memcpy(shm,&indice,sizeof(long int));
-      }
 
-      // se imprime en consola describiendo la accion realizada,incluyendo el indice y la cantidad de prod/consum
-      time ( &antes );//Calcular tiempo que esta bloqueado por el semaforo
-      Wait(semid,2); //protocolo de entrada
-      time ( &despues );
-      acumulado_tiempo_bloquedo+=despues-antes;
-
-      contador_Prod = *shm_cont_prod;
-      Signal(semid,2); //protocolo de salida
-
-      time ( &antes );//Calcular tiempo que esta bloqueado por el semaforo
-      Wait(semid,3); //protocolo de entrada
-      time ( &despues );
-      acumulado_tiempo_bloquedo+=despues-antes;
-
-      contador_Cons = *shm_cont_cons;
-      Signal(semid,3); //protocolo de salida
-
-      printf("Se escribio mensaje:\nIndice: %ld\nCantidad de productores: %ld\nCantidad de consumidores: %ld\n",indice,contador_Prod,contador_Cons);
       Signal(semid,0); //protocolo de salida
       numero_mensajes_enviados++;
 
       //Verificar bandera
       time ( &antes );//Calcular tiempo que esta bloqueado por el semaforo      
       Wait(semid,1); //protocolo de entrada
-      time ( &despues );
-      acumulado_tiempo_bloquedo+=despues-antes;
-printf("DONE\n");
-      //if(numero_mensajes_enviados>2){
-      //bandera = *shm_bandera;
-      //bandera = '1';
-      //}
-      *shm_bandera = bandera;
+         time ( &despues );
+         acumulado_tiempo_bloquedo+=despues-antes;
+         bandera = *shm_bandera;
       Signal(semid,1); //protocolo de salida
    }
    
    // Luego de activarse la bandera se debe decrementar el contador de prod
    time ( &antes );//Calcular tiempo que esta bloqueado por el semaforo      
    Wait(semid,2); //protocolo de entrada
-   time ( &despues );
-   acumulado_tiempo_bloquedo+=despues-antes;
-
-   contador_Prod = *shm_cont_prod; contador_Prod--;
-   *shm_cont_prod = contador_Prod;
+      time ( &despues );
+      acumulado_tiempo_bloquedo+=despues-antes;
+      contador_Prod = *shm_cont_prod; contador_Prod--;
+      *shm_cont_prod = contador_Prod;
    Signal(semid,2); //protocolo de salida
 
    //Al terminar imprime su informacion
    printf("Termino productor\nId: %ld\nNumero de mensajes enviados: %ld\nAcumulado de tiempo esperados: %lf\nAcumulado de tiempo de espera:%lf\n",id,numero_mensajes_enviados,acumulado_tiempo_esperados,acumulado_tiempo_bloquedo);
 
    // Salir
-
-   //for(s = shm; *s != 0;s++){
-   //   printf("%c",*s);
-   //}
-   //printf("\n");
-   //*shm_bandera = '1';
-
-   /*shmunmap(shmid_buf,shm);
-   shmunmap(shmid_bandera,shm_bandera);
-   shmunmap(shmid_cont_prod,shm_cont_prod);
-   shmunmap(shmid_cont_cons,shm_cont_cons);*/
    return 0;
 }
