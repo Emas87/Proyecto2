@@ -6,7 +6,7 @@
 #include <math.h>
 #include "dist.h"
 
-int main(int argc,char *argv[]){
+void funcion(int modo,char *buffer_name,long int* size,double*average_time,int argc,char *argv[]){
 
    int status;
    regex_t re;
@@ -93,10 +93,6 @@ int main(int argc,char *argv[]){
       }
    }
 
-   // Creacion de variables iniciales
-   char *buffer_name;
-   long int size;
-   double average_time;
 
    // Revisar que tipo de opciones se ingresaron 
    for(i = 0;i < argc - 1 ; i++){
@@ -156,13 +152,25 @@ int main(int argc,char *argv[]){
 
       // Opcion invalida, se intenta usar una opcion invalida -d, -x, etc.
       else { 
-         printf("Opcion %s invalida\n",opciones[i]);
-         exit(-1);
+         printf("Opcion %s invalida\n",opciones[i]);         exit(-1);
       }
    }
 
+}
 
-   dist(average_time);
+int main(int argc,char *argv[]){
+   int modo= 0;
+   char *buffer;
+   long int* tamano;
+   double* tiempo;
+   funcion( modo,buffer, tamano,tiempo, argc,argv);
+
+   //testeo de variables de salida
+
+   //
+
+
+   //dist(average_time);
    
 
    // Creador -> Nombre del Buffer, Tamano en entradas para msjs
