@@ -2,6 +2,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <sys/shm.h>
+#include <time.h>
 #include "Semaforo.h"
 #include "decoder.h"
 
@@ -42,6 +43,7 @@ void shmunmap(int shmid,char *shm){
 
 
 int main(int argc,char *argv[]){
+   time_t antes,despues;   
    int MSJSIZE = sizeof(long int) + sizeof(time_t) + sizeof(int);//se define asi para que pueda ser portable
 
    int shmid_buf,shmid_bandera,shmid_cont_prod,shmid_cont_cons;
@@ -50,6 +52,8 @@ int main(int argc,char *argv[]){
    long int *shm_cont_prod = NULL,*shm_cont_cons = NULL;
    char *s;
    int semid = 0,sem_size = SEMSIZE;
+
+   time ( &antes );//Calcular tiempo que dura el finalizador
 
    s = "buffer";
    key = decoder(s); //key del buffer
@@ -121,6 +125,9 @@ int main(int argc,char *argv[]){
    shmunmap(shmid_cont_cons,(char *)shm_cont_cons);
    RemSem(semid);
 
+   time ( &despues );
+   double acumulado_tiempo=despues-antes;
+   printf("Termino Finalizador\nTiempo de ejecucion: %lf\n",acumulado_tiempo);
    
    return 0;
 }
