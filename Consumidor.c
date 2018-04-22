@@ -84,8 +84,8 @@ int main(int argc,char *argv[]){
    long int contador_Prod = 0;
    long int contador_Cons = 0;
 
-	srand((unsigned)time(NULL));
-   while(bandera != '1'){
+   int eom = 0;
+   while(eom != 1){
       // En el loop se genera el tiempo de espera aleatorio, se espera y
       // se pide el semaforo con wait    Wait(semid);
       time ( &antes );//Calcular tiempo que esta en el sleep
@@ -110,6 +110,15 @@ int main(int argc,char *argv[]){
          long int *id_prod = (long int*)s;
          time_t *t = (time_t*)&s[8];
          int * aleatorio = (int*)&s[16];
+
+         printf("ID: %ld\n", *id_prod);
+         printf("TM: %ld\n", *t);
+         printf("AL: %d\n", *aleatorio);
+
+         if(*id_prod == 0 && *aleatorio == 0 && *t == 0){
+            eom = 1;
+            printf("EOM: %d\n", eom);
+         }
 
          // se imprime en consola describiendo la accion realizada,incluyendo el indice y la cantidad de prod/consum
          time ( &antes );//Calcular tiempo que esta bloqueado por el semaforo
@@ -140,12 +149,13 @@ int main(int argc,char *argv[]){
       numero_mensajes_enviados++;
 
       //Verificar bandera
-      time ( &antes );//Calcular tiempo que esta bloqueado por el semaforo      
+/*      time ( &antes );//Calcular tiempo que esta bloqueado por el semaforo      
       Wait(semid,1); //protocolo de entrada
          time ( &despues );
          acumulado_tiempo_bloquedo+=despues-antes;
          bandera = *shm_bandera;
       Signal(semid,1); //protocolo de salida
+*/
    }
    
    // Luego de activarse la bandera se debe decrementar el contador de cons
