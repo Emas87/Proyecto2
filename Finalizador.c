@@ -14,7 +14,7 @@
 
 
 int shmmap(key_t key,char **shm,int shsize){
-   int shmid = shmget(key,shsize,IPC_CREAT| IPC_EXCL | 0666);
+   int shmid = shmget(key,shsize, 0666);
    if (shmid < 0){
       perror("shmget");
       exit(1);
@@ -63,47 +63,32 @@ int main(int argc,char *argv[]){
    key_semaforo = decoder(s); //key del semaforo
    
    //Semaforo
-   semid = Semaforo(key_semaforo,sem_size);
+   semid = getSemaphore(key_semaforo);
    printf("semid: %d\n",semid);
 
    shmid_buf = shmmap(key,&shm,SHSIZE+(MSJSIZE)*5); //modificar 5 por variable de entrada
    shmid_bandera = shmmap(key_bandera,&shm_bandera,1); //char
    shmid_cont_prod = shmmap(key_cont_prod,(char **)&shm_cont_prod,8);//long int
    shmid_cont_cons = shmmap(key_cont_cons,(char **)&shm_cont_cons,8);//long int
-   //getSemaphore(key_semaforo);
 
-   memcpy(shm_bandera,"0",1);
-   *shm_cont_prod = 0;
-   *shm_cont_cons = 0;
-   int init = 0;
-   memcpy(shm,&init,sizeof(long int));
-   s = &shm[16];   
-   init = 5;   
-   memcpy(s,&init,sizeof(long int));
+   //activar bandera para productores
+   char bandera = '1';   
+   Wait(semid,1); //protocolo de entrada
+   *shm_bandera = bandera;
+   Signal(semid,1); //protocolo de salida
 
-   /*s = shm;
-   //s =s + 4;
-   *s = 0;
 
-   char bandera = '0';
-   while(bandera != '1'){
-      sleep(1);
-      Wait(semid,1); //protocolo de entrada
-      bandera = *shm_bandera;
-      Signal(semid,1); //protocolo de salida
-   }
-   s = &shm[SHSIZE];
-   //long int *id = (long int*)&shm[2];
-   time_t *t = (time_t*)&shm[SHSIZE+8];
-   int * aleatorio = (int*)&shm[SHSIZE+16];
-   printf("id : %ld\n",(long int)*s);
-   printf("aleatorio : %d\n",*aleatorio);
+   s = &shm[0];
+   long int *indice = (long int*)s;
+   long int *tamano = (long int*)&shm[8];
+   printf("indice : %ld\n",*indice);
+   printf("tamano : %ld\n",*tamano);
 
    shmunmap(shmid_buf,shm);
    shmunmap(shmid_bandera,shm_bandera);
    shmunmap(shmid_cont_prod,(char *)shm_cont_prod);
    shmunmap(shmid_cont_cons,(char *)shm_cont_cons);
-   RemSem(semid);*/
+   RemSem(semid);
 
    
    return 0;
