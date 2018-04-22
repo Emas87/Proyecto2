@@ -103,7 +103,7 @@ int main(int argc,char *argv[]){
       long int indice = (long int)shm[0];
       long int nbuffer = (long int)shm[16];
       s = &shm[SHSIZE]; // a partir del byte SHSIZE esta el array para los mensajes
-      s + MSJSIZE*indice;//apuntar la posicion para escribir mensaje
+      s+= MSJSIZE*indice;//apuntar la posicion para escribir mensaje
 
       // escribe el mensaje(id del prod,fecha y hora,llave aleatoria entre 0 y 4)
       //long int,time_t,int
@@ -112,7 +112,7 @@ int main(int argc,char *argv[]){
       time_t rawtime;
       time ( &rawtime );
       memcpy(s,&rawtime,sizeof(time_t));
-      s += sizeof(time_t);
+      s+= sizeof(time_t);
       int aleatorio = rand()%5;
       memcpy(s,&aleatorio,sizeof(int));
 
