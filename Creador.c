@@ -7,13 +7,12 @@
 #include "run.h"
 
 
-#define SHSIZE 24 //8 bytes para index de prod,8 bytes para index de consumidores, 8 bytes para tamano del buffer 
-#define SEMSIZE 4 //solo 4 semaforos se ocupan, para el buffer, para la banndera, y para los dos contadores
-//0 buffer
-//1 bandera
-//2 contador Productores
-//3 contador Consumidores
-
+#define SHSIZE 24 // 8 bytes para index de prod, 8 bytes para index de consumidores, 8 bytes para tamano del buffer y 8 bytes para llevar el ultimo ID de consumidores
+#define SEMSIZE 4 // Solo 4 semaforos se ocupan, para el buffer, para la bandera, y para los dos contadores
+// 0 -> Buffer
+// 1 -> Bandera
+// 2 -> Contador Productores
+// 3 -> Contador Consumidores
 
 int shmmap(key_t key,char **shm,int shsize){
    int shmid = shmget(key,shsize,IPC_CREAT| IPC_EXCL | 0666);
@@ -51,9 +50,12 @@ int main(int argc,char *argv[]){
    long int* tamano;tamano = &tam;
    double tiem;
    double* tiempo;tiempo = &tiem;
+
+   printf("********************************************\nEjecucion de Creador\n********************************************\n");
+
    parser(modo, &buffer, tamano, tiempo, argc, argv);
 
-   int MSJSIZE = sizeof(long int) + sizeof(time_t) + sizeof(int);//se define asi para que pueda ser portable
+   int MSJSIZE = sizeof(long int) + sizeof(time_t) + sizeof(int); // Se define asi para que pueda ser portable
 
    int shmid_buf,shmid_bandera,shmid_cont_prod,shmid_cont_cons;
    key_t key,key_semaforo,key_bandera,key_cont_prod,key_cont_cons;
@@ -63,33 +65,35 @@ int main(int argc,char *argv[]){
    int semid = 0,sem_size = SEMSIZE;
 
    s = buffer;
-   key = decoder(s,""); //key del buffer
-   key_bandera=decoder(s,"band"); //key de la bandera
-   key_cont_prod=decoder(s,"prod"); //key del contador de productores
-   key_cont_cons=decoder(s,"cons"); //key del contador de consumidores
-   key_semaforo = decoder(s,"sema"); //key del semaforo
+   key = decoder(s,""); // Key del buffer
+   key_bandera=decoder(s,"band"); // Key de la bandera
+   key_cont_prod=decoder(s,"prod"); // Key del contador de productores
+   key_cont_cons=decoder(s,"cons"); // Key del contador de consumidores
+   key_semaforo = decoder(s,"sema"); // Key del semaforo
    
-   //Semaforo
+   // Semaforo
    semid = Semaforo(key_semaforo,sem_size);
 
-   shmid_buf = shmmap(key,&shm,SHSIZE+(MSJSIZE) * *tamano); //modificar 5 por variable de entrada
-   shmid_bandera = shmmap(key_bandera,&shm_bandera,1); //char
-   shmid_cont_prod = shmmap(key_cont_prod,(char **)&shm_cont_prod,8);//long int
-   shmid_cont_cons = shmmap(key_cont_cons,(char **)&shm_cont_cons,8);//long int
+   shmid_buf = shmmap(key,&shm,SHSIZE+(MSJSIZE) * *tamano); 
+   shmid_bandera = shmmap(key_bandera,&shm_bandera,1);
+   shmid_cont_prod = shmmap(key_cont_prod,(char **)&shm_cont_prod,8);
+   shmid_cont_cons = shmmap(key_cont_cons,(char **)&shm_cont_cons,8);
 
    memcpy(shm_bandera,"0",1);
    long int init = 0;
-   memcpy(shm_cont_prod,&init,sizeof(long int));//contador de productor = 0
-   memcpy(shm_cont_cons,&init,sizeof(long int));//contador de productor = 0
-   memcpy(shm,&init,sizeof(long int));//indice de productor = 0
+   memcpy(shm_cont_prod,&init,sizeof(long int)); // Contador de productor = 0
+   memcpy(shm_cont_cons,&init,sizeof(long int)); // Contador de consumidor = 0
+   memcpy(shm,&init,sizeof(long int)); // Indice de productor = 0
    s = &shm[8];
-   memcpy(s,&init,sizeof(long int));//indice de consumidor = 0
+   memcpy(s,&init,sizeof(long int)); // Indice de consumidor = 0
    s = &shm[16];   
    init = *tamano;   
-   memcpy(s,&init,sizeof(long int));//escribir tmanao del buffer
+   memcpy(s,&init,sizeof(long int)); // Escribir tamano del buffer
    s = &shm[24];
    init = 0;   
-   memcpy(s,&init,sizeof(long int));//ID de consumidor = 0
+   memcpy(s,&init,sizeof(long int)); // ID de consumidor = 0
+
+   printf("********************************************\n");
 
    return 0;
 }

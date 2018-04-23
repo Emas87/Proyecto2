@@ -18,7 +18,7 @@ void parser(int modo, char *buffer_name[], long int* size, double*average_time, 
    char * parametros[argc -1]; // Puntero con los parametros
    int cant_opc = 0; // Cantidad de opciones especificadas
    int cant_param = 0; // Cantidad de parametros especificados
-   int i,j = 0; // iteradores
+   int i,j = 0; // Iteradores
 
    // No se ingresan argumentos
    if(argc == 1){
@@ -125,7 +125,7 @@ void parser(int modo, char *buffer_name[], long int* size, double*average_time, 
             } 
          }
          *size = atoi(size_s);
-         printf("Size: %ld\n", *size);
+         printf("Tamano Buffer: %ld\n", *size);
       } 
 
       // Time
@@ -147,16 +147,14 @@ void parser(int modo, char *buffer_name[], long int* size, double*average_time, 
                }
             }
             if(!((average_time_s[j]>='0' && average_time_s[j]<='9') || (average_time_s[j]==46))){
-              //if(!(average_time_s[j]==46)){ // Es un punto
                 printf("ERROR: La opcion %s solo acepta numeros reales utilizando punto como separador\n", opciones[i]);
                 exit(-1);
-              //}
             } 
          }
 
          double av_time = atof(average_time_s);
          *average_time = av_time;
-         printf("Time: %.10lf\n", *average_time);
+         printf("Tiempo Promedio: %.10lf\n", *average_time);
       } 
 
       // Opcion default
@@ -205,24 +203,3 @@ void parser(int modo, char *buffer_name[], long int* size, double*average_time, 
       }
    }
 }
-
-/*int main(int argc,char *argv[]){
-   int modo= 1;
-   char *buffer;
-   long int* tamano;
-   double* tiempo;
-   funcion(modo, buffer, tamano, tiempo, argc, argv);
-
-
-  
-   // Creador -> Nombre del Buffer, Tamano en entradas para msjs
-
-   // Productor -> Nombre del Buffer, Parametro media tiempo aleatorio
-
-   // Consumidor -> Nombre del Buffer, Parametro media tiempo aleatorio 
-
-   // Finalizador -> No args
-
-  
-   return 0;
-}*/

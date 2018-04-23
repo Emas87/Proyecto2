@@ -13,11 +13,11 @@ int Semaforo(key_t key, int sem_size ){
       perror("Can\'t get id due to");
       exit(-1);
    } else if (id != -1){
-      //inicializar semaforos
+      // Inicializar semaforos
       int i;
       for(i =0;i<sem_size;i++){
          sbuf.sem_num = i;
-         sbuf.sem_op = ValorInicial;  /* This is the number of runs without queuing. */
+         sbuf.sem_op = ValorInicial;
          sbuf.sem_flg = 0;
          if (semop(id, &sbuf, 1) == -1) {
             perror("error: semop"); exit(1);
@@ -35,7 +35,7 @@ int Semaforo(key_t key, int sem_size ){
    return id;
 }
 
-void Wait(int id,int snum) {//P
+void Wait(int id,int snum) { // P
    struct sembuf sbuf;
 	sbuf.sem_num = snum;
 	sbuf.sem_op = -1;  
@@ -46,7 +46,7 @@ void Wait(int id,int snum) {//P
 	}
 }
 
-void Signal(int id,int snum) {//V
+void Signal(int id,int snum) { // V
    struct sembuf sbuf;
 	sbuf.sem_num = snum;
 	sbuf.sem_op = 1; 
@@ -73,7 +73,7 @@ int getSemaphore(key_t semkey) {
 	        perror("IPC error 2: semget"); exit(1);
 	}
 	
-	printf("semid: %d\n", semid);
+	printf("ID Semaforo: %d\n", semid);
 	
 	return semid;
 }

@@ -11,7 +11,7 @@
 #include "run.h"
 #include "dist.h"
 
-#define SHSIZE 24 //8 bytes para index de prod,8 bytes para index de consumidores, 8 bytes para tamano del buffer
+#define SHSIZE 24 // 8 bytes para index de prod, 8 bytes para index de consumidores, 8 bytes para tamano del buffer y 8 bytes para llevar el ultimo ID de consumidores
 
 int shmmap(key_t key,char **shm,int shsize){
    int shmid = shmget(key,shsize,0666);
@@ -48,10 +48,13 @@ int main(int argc,char *argv[]){
    long int* tamano;tamano = &tam;
    double tiem;
    double* tiempo;tiempo = &tiem;
+
+   printf("********************************************\nEjecucion de Consumidor\n********************************************\n");
+
    parser(modo, &buffer, tamano, tiempo, argc, argv);
 
    int shmid_buf,shmid_bandera,shmid_cont_prod,shmid_cont_cons;
-   int MSJSIZE = sizeof(long int) + sizeof(time_t) + sizeof(int);//se define asi para que pueda ser portable
+   int MSJSIZE = sizeof(long int) + sizeof(time_t) + sizeof(int); // Se define asi para que pueda ser portable
    long int numero_mensajes_enviados=0;
    double acumulado_tiempo_esperados=0.0,acumulado_tiempo_bloquedo=0.0;
    char *shm = NULL, *shm_bandera = NULL;
@@ -61,13 +64,12 @@ int main(int argc,char *argv[]){
    int semid = 0;
 
    // Leer datos de la linea de comandos
-   //
    s = buffer;
-   key = decoder(s,""); //key del buffer
-   key_bandera=decoder(s,"band"); //key de la bandera
-   key_cont_prod=decoder(s,"prod"); //key del contador de productores
-   key_cont_cons=decoder(s,"cons"); //key del contador de consumidores
-   key_semaforo = decoder(s,"sema"); //key del semaforo
+   key = decoder(s,""); // Key del buffer
+   key_bandera=decoder(s,"band"); // Key de la bandera
+   key_cont_prod=decoder(s,"prod"); // Key del contador de productores
+   key_cont_cons=decoder(s,"cons"); // Key del contador de consumidores
+   key_semaforo = decoder(s,"sema"); // Key del semaforo
  
    shmid_buf = shmmap(key,&shm,0);
    shmid_bandera = shmmap(key_bandera,&shm_bandera,1);
@@ -77,12 +79,10 @@ int main(int argc,char *argv[]){
 
    //Se aumenta el contador de consumidor
    long int id = 0;   
-   Wait(semid,3); //protocolo de entrada
+   Wait(semid,3); // Protocolo de entrada
       id = *shm_cont_cons; id++;
       *shm_cont_cons = id;
-   Signal(semid,3); //protocolo de salida
-   
-   
+   Signal(semid,3); // Protocolo de salida
    
    // Se crea un loop hasta que se active la bandera
    char bandera = '0';
@@ -96,23 +96,26 @@ int main(int argc,char *argv[]){
    while(eom != 1){
       // En el loop se genera el tiempo de espera aleatorio, se espera y
       // se pide el semaforo con wait    Wait(semid);
+
+      printf("\n-----------------------------------------------------\nObtencion de Mensaje\n");
+
       double espera = dist(*tiempo);      
-      clock_gettime ( CLOCK_REALTIME,  &antes );//Calcular tiempo que esta en el sleep
+      clock_gettime ( CLOCK_REALTIME,  &antes ); // Calcular tiempo que esta en el sleep
       sleep((int)espera);
       clock_gettime ( CLOCK_REALTIME,  &despues );
       acumulado_tiempo_esperados += (despues.tv_sec - antes.tv_sec) + (despues.tv_nsec - antes.tv_nsec)*1e-9;
 
 
-      clock_gettime ( CLOCK_REALTIME,  &antes );//Calcular tiempo que esta bloqueado por el semaforo
-      Wait(semid,0); //protocolo de entrada
+      clock_gettime ( CLOCK_REALTIME,  &antes ); // Calcular tiempo que esta bloqueado por el semaforo
+      Wait(semid,0); // Protocolo de entrada
          clock_gettime ( CLOCK_REALTIME,  &despues );
          acumulado_tiempo_bloquedo += (despues.tv_sec - antes.tv_sec) + (despues.tv_nsec - antes.tv_nsec)*1e-9;
 
-         // se lee la posicion del buffer(indice), leyendo la primera posicion del buffer
+         // Se lee la posicion del buffer(indice), leyendo la primera posicion del buffer
          long int indice = (long int)shm[8];
          long int nbuffer = (long int)shm[16];
-         s = &shm[SHSIZE]; // a partir del byte SHSIZE esta el array para los mensajes
-         s+= MSJSIZE*indice;//apuntar la posicion para escribir mensaje
+         s = &shm[SHSIZE]; // A partir del byte SHSIZE esta el array para los mensajes
+         s+= MSJSIZE*indice; // Apuntar la posicion para escribir mensaje
 
 
          // Se lee el mensaje
@@ -120,36 +123,37 @@ int main(int argc,char *argv[]){
          time_t *t = (time_t*)&s[8];
          int * aleatorio = (int*)&s[16];
 
-         printf("ID: %ld\n", *id_prod);
-         printf("TM: %ld\n", *t);
+         printf ("Mensaje obtenido exitosamente: \n\t");
+         printf("ID: %ld\t", *id_prod);
+         printf("TM: %ld\t", *t);
          printf("AL: %d\n", *aleatorio);
 
          int PID = getpid();
          printf("PID: %d\n", PID);
 
          if((*id_prod == 0 && *aleatorio == 0 && *t == 0) || (PID%5 == *aleatorio)){
-            Signal(semid,0); //protocolo de salida
+            Signal(semid,0); // Protocolo de salida
             break;
          }
 
-         // se imprime en consola describiendo la accion realizada,incluyendo el indice y la cantidad de prod/consum
-         clock_gettime ( CLOCK_REALTIME,  &antes );//Calcular tiempo que esta bloqueado por el semaforo
-         Wait(semid,2); //protocolo de entrada
+         // Se imprime en consola describiendo la accion realizada, incluyendo el indice y la cantidad de prod/cons
+         clock_gettime ( CLOCK_REALTIME,  &antes ); // Calcular tiempo que esta bloqueado por el semaforo
+         Wait(semid,2); // Protocolo de entrada
             clock_gettime ( CLOCK_REALTIME,  &despues );
             acumulado_tiempo_bloquedo += (despues.tv_sec - antes.tv_sec) + (despues.tv_nsec - antes.tv_nsec)*1e-9;
             contador_Prod = *shm_cont_prod;
-         Signal(semid,2); //protocolo de salida
+         Signal(semid,2); // Protocolo de salida
 
          clock_gettime ( CLOCK_REALTIME,  &antes );//Calcular tiempo que esta bloqueado por el semaforo
-         Wait(semid,3); //protocolo de entrada
+         Wait(semid,3); // Protocolo de entrada
             clock_gettime ( CLOCK_REALTIME,  &despues );
             acumulado_tiempo_bloquedo += (despues.tv_sec - antes.tv_sec) + (despues.tv_nsec - antes.tv_nsec)*1e-9;
             contador_Cons = *shm_cont_cons;
-         Signal(semid,3); //protocolo de salida
+         Signal(semid,3); // Protocolo de salida
 
-         printf("Se leyo mensaje:\nIndice: %ld\nCantidad de productores: %ld\nCantidad de consumidores: %ld\n",indice,contador_Prod,contador_Cons);
+         printf("Indice: %ld\nCantidad de productores: %ld\nCantidad de consumidores: %ld\n-----------------------------------------------------\n", indice, contador_Prod, contador_Cons);
 
-         //Aumentar el indice
+         // Aumentar el indice
          s = &shm[8];      
          indice++;
          if(indice >= nbuffer){
@@ -157,23 +161,25 @@ int main(int argc,char *argv[]){
          }
          memcpy(s,&indice,sizeof(long int));
 
-      Signal(semid,0); //protocolo de salida
+      Signal(semid,0); // Protocolo de salida
       numero_mensajes_enviados++;
 
    }
    
    // Luego de activarse la bandera se debe decrementar el contador de cons
-   clock_gettime ( CLOCK_REALTIME,  &antes );//Calcular tiempo que esta bloqueado por el semaforo      
-   Wait(semid,3); //protocolo de entrada
+   clock_gettime ( CLOCK_REALTIME,  &antes ); // Calcular tiempo que esta bloqueado por el semaforo      
+   Wait(semid,3); // Protocolo de entrada
    clock_gettime ( CLOCK_REALTIME,  &despues );
    acumulado_tiempo_bloquedo += (despues.tv_sec - antes.tv_sec) + (despues.tv_nsec - antes.tv_nsec)*1e-9;
 
    contador_Cons = *shm_cont_cons; contador_Cons--;
    *shm_cont_cons = contador_Cons;
-   Signal(semid,3); //protocolo de salida
+   Signal(semid,3); // Protocolo de salida
 
-   //Al terminar imprime su informacion
-   printf("Termino consumidor\nNumero de mensajes recibidos: %ld\nAcumulado de tiempo esperados: %.10lf\nAcumulado de tiempo de espera (bloqueado): %.10lf\n",numero_mensajes_enviados,acumulado_tiempo_esperados,acumulado_tiempo_bloquedo);
+   // Al terminar imprime su informacion
+
+   printf("\n********************************************\nFinal de Ejecucion de Consumidor\n********************************************\n");
+   printf("Numero de mensajes recibidos: %ld\nAcumulado de tiempo esperados: %.10lf\nAcumulado de tiempo bloqueado: %.10lf\n********************************************\n", numero_mensajes_enviados, acumulado_tiempo_esperados, acumulado_tiempo_bloquedo);
 
    // Salir
    return 0;

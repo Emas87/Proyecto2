@@ -22,7 +22,7 @@ long int decoder(char *name_b,const char* add){
    }
 
    long int result = strtol(conversion, NULL, 10);
-   printf("Buffer KEY: 0x%08x\n", (unsigned int)result);
+   //printf("Buffer KEY: 0x%08x\n", (unsigned int)result);
 
    return result;
 

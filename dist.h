@@ -18,7 +18,7 @@ double dist(double media){
   // Donde u es un valor entre 0 y 1 que indica la aleatoridad
   double dist_exp = -media * log(1 - u); 
   
-  printf("U: %f \nDistribucion: %f \n", u, dist_exp);
+  printf("Tiempo segun Distribucion Exponencial: %f \n", dist_exp);
 
   return dist_exp;
 

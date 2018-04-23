@@ -7,13 +7,12 @@
 #include "decoder.h"
 #include "run.h"
 
-#define SHSIZE 24 //8 bytes para index de prod,8 bytes para index de consumidores, 8 bytes para tamano del buffer y 8 bytes para llevar el ultimo ID de consumidores
-#define SEMSIZE 4 //solo 4 semaforos se ocupan, para el buffer, para la banndera, y para los dos contadores
-//0 buffer
-//1 bandera
-//2 contador Productores
-//3 contador Consumidores
-
+#define SHSIZE 24 // 8 bytes para index de prod, 8 bytes para index de consumidores, 8 bytes para tamano del buffer y 8 bytes para llevar el ultimo ID de consumidores
+#define SEMSIZE 4 // Solo 4 semaforos se ocupan, para el buffer, para la bandera, y para los dos contadores
+// 0 -> Buffer
+// 1 -> Bandera
+// 2 -> Contador Productores
+// 3 -> Contador Consumidores
 
 int shmmap(key_t key,char **shm,int shsize){
    int shmid = shmget(key,shsize, 0666);
@@ -51,10 +50,13 @@ int main(int argc,char *argv[]){
    long int* tamano;tamano = &tam;
    double tiem;
    double* tiempo;tiempo = &tiem;
+
+   printf("********************************************\nEjecucion de Finalizador\n********************************************\n");
+
    parser(modo, &buffer, tamano, tiempo, argc, argv);
 
    struct timespec antes,despues;   
-   int MSJSIZE = sizeof(long int) + sizeof(time_t) + sizeof(int);//se define asi para que pueda ser portable
+   int MSJSIZE = sizeof(long int) + sizeof(time_t) + sizeof(int); // Se define asi para que pueda ser portable
 
    int shmid_buf,shmid_bandera,shmid_cont_prod,shmid_cont_cons;
    key_t key,key_semaforo,key_bandera,key_cont_prod,key_cont_cons;
@@ -63,47 +65,47 @@ int main(int argc,char *argv[]){
    char *s;
    int semid = 0,sem_size = SEMSIZE;
 
-   clock_gettime ( CLOCK_REALTIME,  &antes );//Calcular tiempo que dura el finalizador
+   clock_gettime ( CLOCK_REALTIME,  &antes ); // Calcular tiempo que dura el finalizador
 
    s = buffer;
-   key = decoder(s,""); //key del buffer
-   key_bandera=decoder(s,"band"); //key de la bandera
-   key_cont_prod=decoder(s,"prod"); //key del contador de productores
-   key_cont_cons=decoder(s,"cons"); //key del contador de consumidores
-   key_semaforo = decoder(s,"sema"); //key del semaforo
+   key = decoder(s,""); // Key del buffer
+   key_bandera=decoder(s,"band"); // Key de la bandera
+   key_cont_prod=decoder(s,"prod"); // Key del contador de productores
+   key_cont_cons=decoder(s,"cons"); // Key del contador de consumidores
+   key_semaforo = decoder(s,"sema"); // Key del semaforo
    
-   //Semaforo
+   // Semaforo
    semid = getSemaphore(key_semaforo);
-   printf("semid: %d\n",semid);
+   //printf("ID Semaforo: %d\n",semid);
 
    shmid_buf = shmmap(key,&shm,0);
-   shmid_bandera = shmmap(key_bandera,&shm_bandera,1); //char
-   shmid_cont_prod = shmmap(key_cont_prod,(char **)&shm_cont_prod,8);//long int
-   shmid_cont_cons = shmmap(key_cont_cons,(char **)&shm_cont_cons,8);//long int
+   shmid_bandera = shmmap(key_bandera,&shm_bandera,1);
+   shmid_cont_prod = shmmap(key_cont_prod,(char **)&shm_cont_prod,8);
+   shmid_cont_cons = shmmap(key_cont_cons,(char **)&shm_cont_cons,8);
 
-   //activar bandera para productores
+   // Activar bandera para productores
    char bandera = '1';   
-   Wait(semid,1); //protocolo de entrada
+   Wait(semid,1); // Protocolo de entrada
       *shm_bandera = bandera;
-   Signal(semid,1); //protocolo de salida
+   Signal(semid,1); // Protocolo de salida
 
 
-   //Escribir en todas las posiciones de memoria 
-   Wait(semid,0); //protocolo de entrada
+   // Escribir en todas las posiciones de memoria 
+   Wait(semid,0); // Protocolo de entrada
       s = shm;
       long int *indicep = (long int*)s;
       s+=8;
       long int *indicec = (long int*)s;
       s+=8;
       tamano = (long int*)s;
-      printf("indicep : %ld\n",*indicep);
-      printf("indicec : %ld\n",*indicec);
-      printf("tamano : %ld\n",*tamano);
+      printf("Tamano Buffer: %ld\n",*tamano);
+      printf("Indice Productor : %ld\n",*indicep);
+      printf("Indice Consumidor : %ld\n",*indicec);
+
       s = &shm[SHSIZE];
            long int i = 0; 
 	   for(i = 0;i<*tamano;i++){
-	      // escribe el mensaje(id del prod,fecha y hora,llave aleatoria entre 0 y 4)
-	      //long int,time_t,int
+	      // Escribe el mensaje(id del prod, fecha y hora, llave aleatoria entre 0 y 4)
 	      memset(s, 0, sizeof(long int));
 	      s+= sizeof(long int);
 	      memset(s,0,sizeof(time_t));
@@ -111,18 +113,18 @@ int main(int argc,char *argv[]){
 	      memset(s,0,sizeof(int));
 	      s+= sizeof(int);
 	   }
-   Signal(semid,0); //protocolo de salida      
+   Signal(semid,0); // Protocolo de salida      
 
    long int contador_Prod = 1;
    long int contador_Cons = 1;
    while(contador_Prod > 0 | contador_Cons > 0){
-      Wait(semid,2); //protocolo de entrada
+      Wait(semid,2); // Protocolo de entrada
          contador_Prod = *shm_cont_prod;
-      Signal(semid,2); //protocolo de salida
+      Signal(semid,2); // Protocolo de salida
 
-      Wait(semid,3); //protocolo de entrada
+      Wait(semid,3); // Protocolo de entrada
          contador_Cons = *shm_cont_cons;
-      Signal(semid,3); //protocolo de salida
+      Signal(semid,3); // Protocolo de salida
    }
 
 
@@ -134,7 +136,7 @@ int main(int argc,char *argv[]){
 
    clock_gettime ( CLOCK_REALTIME,  &despues );
    double acumulado_tiempo = (despues.tv_sec - antes.tv_sec) + (despues.tv_nsec - antes.tv_nsec)*1e-9;
-   printf("Termino Finalizador\nTiempo de ejecucion: %.10lf\n",acumulado_tiempo);
+   printf("Tiempo de ejecucion: %.10lf\n********************************************\n",acumulado_tiempo);
    
    return 0;
 }
