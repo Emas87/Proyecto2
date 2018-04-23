@@ -63,15 +63,11 @@ int main(int argc,char *argv[]){
    int semid = 0,sem_size = SEMSIZE;
 
    s = buffer;
-   key = decoder(s); //key del buffer
-   s = "bandera";   
-   key_bandera=decoder(s); //key de la bandera
-   s = "contador1";   
-   key_cont_prod=decoder(s); //key del contador de productores
-   s = "contador2";   
-   key_cont_cons=decoder(s); //key del contador de consumidores
-   s = "semaforo";   
-   key_semaforo = decoder(s); //key del semaforo
+   key = decoder(s,""); //key del buffer
+   key_bandera=decoder(s,"band"); //key de la bandera
+   key_cont_prod=decoder(s,"prod"); //key del contador de productores
+   key_cont_cons=decoder(s,"cons"); //key del contador de consumidores
+   key_semaforo = decoder(s,"sema"); //key del semaforo
    
    //Semaforo
    semid = Semaforo(key_semaforo,sem_size);
