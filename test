@@ -3,9 +3,9 @@ max=10
 for i in `seq 1 $max`
 do
    ./Productor -b teste -t $i >> productor.txt &
-
+   
 done
-max=6
+max=16
 for i in `seq 1 $max`
 do
    ./Consumidor -b teste -t $i >> consumidor.txt &

@@ -18,12 +18,12 @@
 int shmmap(key_t key,char **shm,int shsize){
    int shmid = shmget(key,shsize, 0666);
    if (shmid < 0){
-      perror("shmget");
+      printf("no existe memoria compartida asociada a ese key: %ld\n",(long int)key);
       exit(1);
    }
    *shm = shmat(shmid,NULL,0);
    if(shm == (void *)-1) {
-      perror("shmmat");
+      printf("no existe memoria compartida asociada a ese key: %ld\n",(long int)key);
       exit(1);
    }
    return shmid;
@@ -32,12 +32,12 @@ void shmunmap(int shmid,char *shm){
    struct shmid_ds *shmid_buf = NULL;
    int status = shmdt(shm);
    if (status < 0){
-      perror("shmdt");
+      perror("No se pudo remover esa memoria compartida");
       exit(1);
    }
    status = shmctl(shmid,IPC_RMID,shmid_buf);
    if (status < 0){
-      perror("shmclt");
+      perror("No se pudo remover esa memoria compartida");
       exit(1);
    }
 }
@@ -74,7 +74,6 @@ int main(int argc,char *argv[]){
    
    //Semaforo
    semid = getSemaphore(key_semaforo);
-   printf("semid: %d\n",semid);
 
    shmid_buf = shmmap(key,&shm,0);
    shmid_bandera = shmmap(key_bandera,&shm_bandera,1); //char
