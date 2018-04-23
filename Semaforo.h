@@ -62,7 +62,7 @@ void RemSem(int semid){
    int status = 0;
    status = semctl(semid,0,IPC_RMID);
    if (status < 0) {
-	   printf("no se pudo remover el semaforo con id %d",semid); exit(1);
+	   printf("no se pudo remover el semaforo con id %d", semid); exit(1);
 	}
 }
 

@@ -17,12 +17,12 @@
 int shmmap(key_t key,char **shm,int shsize){
    int shmid = shmget(key,shsize,0666);
    if (shmid < 0){
-      printf("no existe memoria compartida asociada a ese key: %ld\n",(long int)key);
+      printf("No existe memoria compartida asociada a ese key: %ld\n", (long int)key);
       exit(1);
    }
    *shm = shmat(shmid,NULL,0);
    if(shm == (void *)-1) {
-      printf("no existe memoria compartida asociada a ese key: %ld\n",(long int)key);
+      printf("No existe memoria compartida asociada a ese key: %ld\n", (long int)key);
       exit(1);
    }
    return shmid;

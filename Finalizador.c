@@ -17,12 +17,12 @@
 int shmmap(key_t key,char **shm,int shsize){
    int shmid = shmget(key,shsize, 0666);
    if (shmid < 0){
-      printf("no existe memoria compartida asociada a ese key: %ld\n",(long int)key);
+      printf("No existe memoria compartida asociada a ese key: %ld\n",(long int)key);
       exit(1);
    }
    *shm = shmat(shmid,NULL,0);
    if(shm == (void *)-1) {
-      printf("no existe memoria compartida asociada a ese key: %ld\n",(long int)key);
+      printf("No existe memoria compartida asociada a ese key: %ld\n",(long int)key);
       exit(1);
    }
    return shmid;
@@ -76,10 +76,8 @@ int main(int argc,char *argv[]){
    
    // Semaforo
    semid = getSemaphore(key_semaforo);
-<<<<<<< HEAD
+
    //printf("ID Semaforo: %d\n",semid);
-=======
->>>>>>> d918e3040f62168651f5ace4357d6cbd23148bcd
 
    shmid_buf = shmmap(key,&shm,0);
    shmid_bandera = shmmap(key_bandera,&shm_bandera,1);
@@ -139,7 +137,7 @@ int main(int argc,char *argv[]){
 
    clock_gettime ( CLOCK_REALTIME,  &despues );
    double acumulado_tiempo = (despues.tv_sec - antes.tv_sec) + (despues.tv_nsec - antes.tv_nsec)*1e-9;
-   printf("Tiempo de ejecucion: %.10lf\n********************************************\n",acumulado_tiempo);
+   printf("Tiempo de ejecucion: %.10lf\n********************************************\n", acumulado_tiempo);
    
    return 0;
 }
