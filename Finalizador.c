@@ -99,9 +99,6 @@ int main(int argc,char *argv[]){
       long int *indicec = (long int*)s;
       s+=8;
       tamano = (long int*)s;
-      printf("Tamano Buffer: %ld\n",*tamano);
-      printf("Indice Productor : %ld\n",*indicep);
-      printf("Indice Consumidor : %ld\n",*indicec);
 
       s = &shm[SHSIZE];
            long int i = 0; 
@@ -137,7 +134,7 @@ int main(int argc,char *argv[]){
 
    clock_gettime ( CLOCK_REALTIME,  &despues );
    double acumulado_tiempo = (despues.tv_sec - antes.tv_sec) + (despues.tv_nsec - antes.tv_nsec)*1e-9;
-   printf("Tiempo de ejecucion: %.10lf\n********************************************\n", acumulado_tiempo);
+   printf("Tiempo que se espera a los consumidores y productores: %.10lf\n********************************************\n", acumulado_tiempo);
    
    return 0;
 }

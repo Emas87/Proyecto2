@@ -1,13 +1,13 @@
-./Creador -b teste -s 10
+./Creador -b teste -s 5
 max=10
 for i in `seq 1 $max`
 do
-   ./Productor -b teste -t $i >> productor.txt &
+   ./Productor -b teste -t 10 >> productor.txt &
    
 done
-max=16
+max=9
 for i in `seq 1 $max`
 do
-   ./Consumidor -b teste -t $i >> consumidor.txt &
+   ./Consumidor -b teste -t 10 >> consumidor.txt &
 
 done
